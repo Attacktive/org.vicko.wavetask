@@ -12,10 +12,13 @@ Source0:        %{url}/archive/refs/heads/main.tar.gz#/%{name}-%{version}.tar.gz
 BuildRequires:  gcc-c++
 BuildRequires:  fdupes
 BuildRequires:  cmake
-BuildRequires:  kf6-extra-cmake-modules
-BuildRequires:  qt6-base-devel
-BuildRequires:  qt6-declarative-devel
-BuildRequires:  qt6-gui-private-devel
+
+BuildRequires:  extra-cmake-modules
+
+BuildRequires:  qt6-qtbase-devel
+BuildRequires:  qt6-qtbase-private-devel
+BuildRequires:  qt6-qtdeclarative-devel
+
 BuildRequires:  kf6-ki18n-devel
 BuildRequires:  kf6-kservice-devel
 BuildRequires:  kf6-kwindowsystem-devel
@@ -24,12 +27,15 @@ BuildRequires:  kf6-kconfigwidgets-devel
 BuildRequires:  kf6-knotifications-devel
 BuildRequires:  kf6-kio-devel
 BuildRequires:  kf6-kcoreaddons-devel
-BuildRequires:  libplasma6-devel
-BuildRequires:  plasma6-activities-devel
-BuildRequires:  plasma6-activities-stats-devel
-BuildRequires:  libksysguard6-devel
-BuildRequires:  plasma6-workspace-devel
-BuildRequires:  kwin6-devel
+
+BuildRequires:  plasma-devel
+BuildRequires:  plasma-activities-devel
+BuildRequires:  plasma-activities-stats-devel
+BuildRequires:  plasma-workspace-devel
+
+BuildRequires:  libksysguard-devel
+BuildRequires:  kwin-devel
+
 BuildRequires:  cmake(LibTaskManager)
 BuildRequires:  cmake(LibNotificationManager)
 
@@ -45,14 +51,14 @@ Plasmoid wavetask Qt6 QML Task Manager plugin for Plasma 6 environments with zoo
 %build
 export CXXFLAGS="%{optflags} -I%{_vpath_builddir}/plugin"
 
-%cmake_kf6 \
-    -DBUILD_TESTING=OFF \
-    -DKDE_INSTALL_USE_QT_SYS_PATHS=ON
+%cmake \
+  -DBUILD_TESTING=OFF \
+  -DKDE_INSTALL_USE_QT_SYS_PATHS=ON
 
-%kf6_build
+%cmake_build
 
 %install
-%kf6_install
+%cmake_install
 %fdupes %{buildroot}
 
 %files
