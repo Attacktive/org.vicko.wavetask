@@ -28,7 +28,7 @@ BuildRequires:  kf6-knotifications-devel
 BuildRequires:  kf6-kio-devel
 BuildRequires:  kf6-kcoreaddons-devel
 
-BuildRequires:  plasma-devel
+BuildRequires:  libplasma-devel
 BuildRequires:  plasma-activities-devel
 BuildRequires:  plasma-activities-stats-devel
 BuildRequires:  plasma-workspace-devel
