@@ -668,7 +668,7 @@ PlasmaCore.ToolTipArea {
             clip: true
             opacity: 0.5
             z: -1
-            visible: true
+            visible: Plasmoid.configuration.showReflection
 
             Kirigami.Icon {
                 id: reflectionIcon
@@ -698,80 +698,6 @@ PlasmaCore.ToolTipArea {
             sourceComponent: busyIndicator
         }
     }
- /*   Loader {
-        id: iconBox
-
-        anchors {
-            left: parent.left
-            leftMargin: adjustMargin(true, parent.width, taskFrame.margins.left)
-            top: parent.top
-            topMargin: adjustMargin(false, parent.height, taskFrame.margins.top)
-        }
-
-        width: task.inPopup ? Math.max(Kirigami.Units.iconSizes.sizeForLabels, Kirigami.Units.iconSizes.medium) : Math.min(task.parent?.minimumWidth ?? 0, task.height)
-        height: task.inPopup ? width : (parent.height - adjustMargin(false, parent.height, taskFrame.margins.top)
-                 - adjustMargin(false, parent.height, taskFrame.margins.bottom))
-
-        asynchronous: true
-        active: height >= Kirigami.Units.iconSizes.small
-                && task.smartLauncherItem && task.smartLauncherItem.countVisible
-        source: "TaskBadgeOverlay.qml"
-
-        function adjustMargin(isVertical: bool, size: real, margin: real): real {
-            if (!size) {
-                return margin;
-            }
-
-            var margins = isVertical ? LayoutMetrics.horizontalMargins() : LayoutMetrics.verticalMargins();
-
-            if ((size - margins) < Kirigami.Units.iconSizes.small) {
-                return Math.ceil((margin * (Kirigami.Units.iconSizes.small / size)) / 2);
-            }
-
-            return margin;
-        }
-
-        Kirigami.Icon {
-            id: icon
-
-            anchors.fill: parent
-
-            active: task.highlighted
-            enabled: true
-
-            source: task.model.decoration
-        }
-
-        states: [
-            // Using a state transition avoids a binding loop between label.visible and
-            // the text label margin, which derives from the icon width.
-            State {
-                name: "standalone"
-                when: !label.visible && task.parent
-
-                AnchorChanges {
-                    target: iconBox
-                    anchors.left: undefined
-                    anchors.horizontalCenter: parent.horizontalCenter
-                }
-
-                PropertyChanges {
-                    iconBox.anchors.leftMargin: 0
-                    iconBox.width: Math.min(task.parent.minimumWidth, tasksRoot.height)
-                        - iconBox.adjustMargin(true, task.width, taskFrame.margins.left)
-                        - iconBox.adjustMargin(true, task.width, taskFrame.margins.right)
-                }
-            }
-        ]
-
-        Loader {
-            anchors.centerIn: parent
-            width: Math.min(parent.width, parent.height)
-            height: width
-            active: task.model.IsStartup
-            sourceComponent: busyIndicator
-        }
-    } */
 
     PlasmaComponents3.Label {
         id: label
