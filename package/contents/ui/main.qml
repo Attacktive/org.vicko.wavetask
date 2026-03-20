@@ -645,6 +645,10 @@ PlasmoidItem {
             TaskList {
                 id: taskList
 
+                property real smoothMouseX: -1
+                property bool insideDock: false
+                property alias animating: taskList.animating
+
 
                 width: Math.ceil(taskRepeater.count * (Plasmoid.configuration.iconSize +  14))  // 10 menos que la  altura del panel
                 height: tasks.height
@@ -677,80 +681,63 @@ PlasmoidItem {
                     }
                 }
 
-                Item {
-                    id: dockContainer
-                    // El contenedor ahora es un área estática que llena el filtro
-                    anchors.fill: parent
+                HoverHandler {
+                    id: dockHoverHandler
 
-                    // 1. Este es el MouseArea que detecta el movimiento en todo el dock
-                    MouseArea {
-                        id: dockMouseArea
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        acceptedButtons: Qt.NoButton
+                    onPointChanged: {
+                        let mappedPos = taskList.mapToItem(tasks, point.position.x, point.position.y)
 
-                        // Posición suavizada del mouse
-                        property real smoothMouseX: -1
-                        property bool insideDock: false
-
-                        // Suavizado de movimiento para evitar parpadeos
-                        onPositionChanged: (mouse) => {
-                            let mappedPos = mapToItem(tasks, mouse.x, mouse.y);
-                            if (smoothMouseX < 0) {
-                                smoothMouseX = mappedPos.x;
-                            } else {
-                                // Suavizado tipo “lerp” para movimiento fluido
-                                smoothMouseX = smoothMouseX + (mappedPos.x - smoothMouseX) * 0.3;
-                            }
-                            insideDock = true;
+                        if (taskList.smoothMouseX < 0) {
+                            taskList.smoothMouseX = mappedPos.x
+                        } else {
+                            taskList.smoothMouseX +=
+                            (mappedPos.x - taskList.smoothMouseX) * 0.3
                         }
 
-                        onEntered: {
-                            insideDock = true;
-                        }
+                        taskList.insideDock = true
+                    }
 
-                        onExited: {
+                    onHoveredChanged: {
+                        if (hovered) {
+                            taskList.insideDock = true;
+                        } else {
                             exitTimer.restart();
                         }
+                    }
+                }
 
-                        Timer {
-                            id: exitTimer
-                            interval: 40
-                            repeat: false
-                            onTriggered: {
-                                if (!dockMouseArea.containsMouse) {
-                                    dockMouseArea.insideDock = false;
-                                    dockMouseArea.smoothMouseX = -1;
-                                }
-                            }
+                Timer {
+                    id: exitTimer
+                    interval: 40
+                    repeat: false
+                    onTriggered: {
+                        if (!dockHoverHandler.hovered) {
+                            taskList.insideDock = false;
+                            taskList.smoothMouseX = -1;
                         }
+                    }
+                }
 
-                        onPressed: (mouse) => { mouse.accepted = false }
+                Repeater {
+                    id: taskRepeater
+                    model: tasksModel
 
-                        Repeater {
-                            id: taskRepeater
-                            model: tasksModel
+                    delegate: Task {
+                        id: taskItem
+                        tasksRoot: tasks
+                        dockRef: taskList
 
-                            delegate: Task {
-                                id: taskItem
-                                tasksRoot: tasks
-                                // Pasamos la referencia si es necesario
-                                dockRef: dockMouseArea
-
-                                x: {
-                                    let posX = taskList.centerOffset; // Empezamos en el centro calculado
-                                    for (let i = 0; i < index; ++i) {
-                                        let previousItem = taskRepeater.itemAt(i);
-                                        // Si el item anterior existe, sumamos su ancho.
-                                        // Si no, sumamos el ancho base estimado (60) para que no se encimen.
-                                        posX += (previousItem ? previousItem.width : 60);
-                                    }
-                                    return posX;
-                                }
-
-                                width: (Plasmoid.configuration.iconSize * zoomFactor) + 6
+                        x: {
+                            let posX = taskList.centerOffset; // Empezamos en el centro calculado
+                            for (let i = 0; i < index; ++i) {
+                                let previousItem = taskRepeater.itemAt(i);
+                                // Si el item anterior existe, sumamos su ancho.
+                                // Si no, sumamos el ancho base estimado (60) para que no se encimen.
+                                posX += (previousItem ? previousItem.width : 60);
                             }
+                            return posX;
                         }
+                        width: (Plasmoid.configuration.iconSize * zoomFactor) + 6
                     }
                 }
             }
