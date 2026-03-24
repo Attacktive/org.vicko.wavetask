@@ -44,6 +44,7 @@ PlasmoidItem {
     readonly property Component pulseAudioComponent: Qt.createComponent("PulseAudio.qml")
 
     property alias taskList: taskList
+    property alias taskRepeater: taskRepeater
 
     preferredRepresentation: fullRepresentation
 
@@ -713,7 +714,6 @@ PlasmoidItem {
                     onTriggered: {
                         if (!dockHoverHandler.hovered) {
                             taskList.insideDock = false;
-                            taskList.smoothMouseX = -1;
                         }
                     }
                 }
