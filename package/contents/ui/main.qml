@@ -516,8 +516,7 @@ PlasmoidItem {
                 id: internalCanvas
 
                 // Definimos cuánto queremos que crezca el fondo lateralmente
-                readonly property int expansionAmount: tasks.isZoomActive ? (Plasmoid.configuration.iconSize * Plasmoid.configuration.amplitud)-4 : -(Plasmoid.configuration.iconSize * Plasmoid.configuration.amplitud)-10
-
+                readonly property int expansionAmount: tasks.isZoomActive ? 42 : -(Plasmoid.configuration.iconSize * Plasmoid.configuration.amplitud)-42
                 // 2. CAPA DE FONDO
                 KSvg.FrameSvgItem {
                     id: backgroundItem
@@ -530,8 +529,8 @@ PlasmoidItem {
                     y: (Plasmoid.configuration.iconSize < 48) ? shadowItem.margins.top + 6 : shadowItem.margins.top - 4
 
                     // --- ANCHO Y POSICIÓN DINÁMICA ---
-                    width: (taskList.width - 56) + internalCanvas.expansionAmount
-                    x: 28 - (internalCanvas.expansionAmount / 2)
+                    width: (taskList.width - 24) + internalCanvas.expansionAmount
+                    x: 12 - (internalCanvas.expansionAmount / 2)
 
                     // Animaciones para suavizar el estiramiento
                     Behavior on width { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
@@ -556,8 +555,8 @@ PlasmoidItem {
                     y: (Plasmoid.configuration.iconSize < 48) ? 6 : -4
 
                     // --- ANCHO Y POSICIÓN DE SOMBRA DINÁMICA ---
-                    width: (taskList.width - 32) + internalCanvas.expansionAmount
-                    x: 16 - (internalCanvas.expansionAmount / 2)
+                    width: (taskList.width) + internalCanvas.expansionAmount
+                    x: 0 - (internalCanvas.expansionAmount / 2)
 
                     // Animaciones para que la sombra siga al fondo suavemente
                     Behavior on width { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
