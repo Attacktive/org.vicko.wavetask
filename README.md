@@ -33,6 +33,22 @@ If you need to install it on Plasma 6.5 or lower, I recommend you do it from her
 
 After installing the package, you just need to add the panel for wavetask
 
+## Compile from source
+
+Install the development packages.
+
+Download the code from GitHub.
+
+mkdir build
+
+cd build
+
+cmake ..
+
+make
+
+make install 
+
 ## Features:
 
 - It inherits all the features of Plasma's task manager
