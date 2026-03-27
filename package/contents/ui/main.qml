@@ -516,7 +516,9 @@ PlasmoidItem {
                 id: internalCanvas
 
                 // Definimos cuánto queremos que crezca el fondo lateralmente
-                readonly property int expansionAmount: tasks.isZoomActive ? 42 : -(Plasmoid.configuration.iconSize * Plasmoid.configuration.amplitud)-42
+                readonly property real expansionAmount: tasks.isZoomActive ? Plasmoid.configuration.iconSize * 0.8 : -(Plasmoid.configuration.iconSize * 3.5)
+                readonly property real horizontalMargins: shadowItem.margins.left + shadowItem.margins.right
+                readonly property real spacing: Kirigami.Units.smallSpacing
                 // 2. CAPA DE FONDO
                 KSvg.FrameSvgItem {
                     id: backgroundItem
@@ -524,13 +526,15 @@ PlasmoidItem {
                     prefix: ""
                     z: -1
 
-                    // Altura (Tu lógica original)
-                    height: (Plasmoid.configuration.iconSize < 48) ? taskList.height - (shadowItem.margins.top + 6) : taskList.height - (shadowItem.margins.top - 4)
-                    y: (Plasmoid.configuration.iconSize < 48) ? shadowItem.margins.top + 6 : shadowItem.margins.top - 4
+                    // Altura dinámica basada en icono + padding
+                    readonly property real verticalPadding:  Plasmoid.configuration.iconSize * 0.15
 
-                    // --- ANCHO Y POSICIÓN DINÁMICA ---
-                    width: (taskList.width - 24) + internalCanvas.expansionAmount
-                    x: 12 - (internalCanvas.expansionAmount / 2)
+                    height: taskList.height - verticalPadding - shadowItem.margins.top
+
+                    y: (Plasmoid.configuration.iconSize < 48) ? shadowItem.margins.top + (internalCanvas.spacing * 1.5) : shadowItem.margins.top - (internalCanvas.spacing)
+
+                    width: taskList.width + internalCanvas.expansionAmount - horizontalMargins
+                    x: shadowItem.margins.left - (internalCanvas.expansionAmount / 2)
 
                     // Animaciones para suavizar el estiramiento
                     Behavior on width { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
@@ -550,13 +554,17 @@ PlasmoidItem {
                     prefix: "shadow"
                     z: -2
 
-                    // Altura (Tu lógica original)
-                    height: (Plasmoid.configuration.iconSize < 48) ? taskList.height + (shadowItem.margins.top - 6) : taskList.height + (shadowItem.margins.top + 4)
-                    y: (Plasmoid.configuration.iconSize < 48) ? 6 : -4
+                    // Sombra un poco más grande que el fondo
+                    readonly property real shadowPadding:
+                    Plasmoid.configuration.iconSize * 0.15
+
+                    height: taskList.height + shadowPadding
+
+                    y: (Plasmoid.configuration.iconSize < 48) ? (internalCanvas.spacing * 1.5) : -(internalCanvas.spacing)
 
                     // --- ANCHO Y POSICIÓN DE SOMBRA DINÁMICA ---
-                    width: (taskList.width) + internalCanvas.expansionAmount
-                    x: 0 - (internalCanvas.expansionAmount / 2)
+                    width: taskList.width + internalCanvas.expansionAmount
+                    x: -(internalCanvas.expansionAmount / 2)
 
                     // Animaciones para que la sombra siga al fondo suavemente
                     Behavior on width { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
@@ -575,9 +583,19 @@ PlasmoidItem {
                 opacity: 1.0
 
                 // 1. Definimos propiedades para animar los laterales
-                // Si hay zoom, restamos un valor (ej. 20px) para que el fondo se extienda
-                property int dynamicLeftMargin: tasks.isZoomActive ? (tasks.skinParams.outLeft - 26) : (tasks.skinParams.outLeft + (Plasmoid.configuration.iconSize * Plasmoid.configuration.amplitud)-26)
-                property int dynamicRightMargin: tasks.isZoomActive ? (tasks.skinParams.outRight - 26) : (tasks.skinParams.outRight + (Plasmoid.configuration.iconSize * Plasmoid.configuration.amplitud)-26)
+              readonly property real zoomPadding: Plasmoid.configuration.iconSize * 0.5
+
+              readonly property real spacing: Kirigami.Units.smallSpacing
+
+              property real dynamicLeftMargin:
+              tasks.isZoomActive
+              ? (tasks.skinParams.outLeft - zoomPadding)
+              : (tasks.skinParams.outLeft + zoomPadding + spacing * 8)
+
+              property real dynamicRightMargin:
+              tasks.isZoomActive
+              ? (tasks.skinParams.outRight - zoomPadding)
+              : (tasks.skinParams.outRight + zoomPadding + spacing * 8)
 
                 anchors {
                     fill: parent
@@ -648,9 +666,10 @@ PlasmoidItem {
                 property real smoothMouseX: -1
                 property bool insideDock: false
                 property alias animating: taskList.animating
+                readonly property real baseItemWidth: Plasmoid.configuration.iconSize
+                readonly property real spacing: Kirigami.Units.smallSpacing
 
-
-                width: Math.ceil(taskRepeater.count * (Plasmoid.configuration.iconSize +  (Plasmoid.configuration.iconSize * Plasmoid.configuration.amplitud)/4)) + 12
+                width: Math.ceil(taskRepeater.count * (Plasmoid.configuration.iconSize + (Plasmoid.configuration.iconSize * 1.5) / 4) + spacing * 3)
                 height: tasks.height
 
                 // 2. Calculamos el ancho real de todos los iconos sumados
@@ -658,7 +677,10 @@ PlasmoidItem {
                     let total = 0;
                     for (let i = 0; i < taskRepeater.count; ++i) {
                         let item = taskRepeater.itemAt(i);
-                        if (item) total += item.width;
+                        if (item) {
+                            total += item.width;
+                            if (i > 0) total += spacing;
+                        }
                     }
                     return total;
                 }
@@ -727,16 +749,15 @@ PlasmoidItem {
                         dockRef: taskList
 
                         x: {
-                            let posX = taskList.centerOffset; // Empezamos en el centro calculado
+                            let posX = taskList.centerOffset;
                             for (let i = 0; i < index; ++i) {
                                 let previousItem = taskRepeater.itemAt(i);
-                                // Si el item anterior existe, sumamos su ancho.
-                                // Si no, sumamos el ancho base estimado (60) para que no se encimen.
-                                posX += (previousItem ? previousItem.width : 60);
+                                let w = previousItem ? previousItem.width : Plasmoid.configuration.iconSize;
+                                posX += w + taskList.spacing;
                             }
                             return posX;
                         }
-                        width: (Plasmoid.configuration.iconSize * zoomFactor) + 6
+                        width: (Plasmoid.configuration.iconSize * zoomFactor)
                     }
                 }
             }
