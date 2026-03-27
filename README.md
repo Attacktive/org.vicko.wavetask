@@ -75,6 +75,7 @@ Skins:
 What doesn't work:
 - For now, it only works in the bottom position
 - The panel has been resized to 76 pixels so that icons aren't cut off when zooming
+- The blur effect is not applied to the default theme
 
 ### ☕ Buy Me a Coffee!
 
