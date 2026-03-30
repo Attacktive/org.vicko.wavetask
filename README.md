@@ -66,6 +66,7 @@ make install
 - It inherits all the features of Plasma's task manager
 - Zoom like in macOS
 - Icon reflection
+- Bouncing icons
 - Basic skin system
 - Option to select the icon size
 - Option to select the zoom size
