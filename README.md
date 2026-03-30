@@ -32,6 +32,16 @@ If you need to install it on Plasma 6.5 or lower, I recommend you do it from her
   sudo dnf install wavetask
   ```
 </details>
+<details>
+  <summary>kubuntu 25.10 ppa launchpad</summary>
+  <br>
+  
+  ```sh
+sudo add-apt-repository ppa:matou1306/wavetask
+sudo apt update
+sudo apt install wavetask
+  ```
+</details>
 
 After installing the package, you just need to add the panel for wavetask
 
