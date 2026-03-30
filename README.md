@@ -43,23 +43,30 @@ sudo apt install wavetask
   ```
 </details>
 
-After installing the package, you just need to add the panel for wavetask
+### after installing the package add the panel for wavetask
+- Right-click on your desktop.
+- select "Enter edit mode"
+- Go to "Layout" tab
+- Select "Panel for wavetask" from the dropdown
+- Click "Apply"
+
+### After adding the panel, make these modifications
+- Adjust the width to "fit to content"
+- Adjust alignment to "center"
+- If you want to increase the size of the icons above 46px, you need to increase the height of the panel so that the zoom is not cut off.
 
 ## Compile from source
 
-Install the development packages.
+- Install the development packages.
+- Download the code from GitHub.
 
-Download the code from GitHub.
+mkdir build && cd build
 
-mkdir build
+cmake .. -DCMAKE_BUILD_TYPE=Release
 
-cd build
+make -j$(nproc)
 
-cmake ..
-
-make
-
-make install 
+sudo make install
 
 ## Features:
 
