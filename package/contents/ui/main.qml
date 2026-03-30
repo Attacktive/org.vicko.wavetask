@@ -515,65 +515,59 @@ PlasmoidItem {
             Item {
                 id: internalCanvas
 
-                // Definimos cuánto queremos que crezca el fondo lateralmente
-                readonly property real expansionAmount: tasks.isZoomActive ? Plasmoid.configuration.iconSize * 0.8 : -(Plasmoid.configuration.iconSize * 3.5)
                 readonly property real horizontalMargins: shadowItem.margins.left + shadowItem.margins.right
-                readonly property real spacing: Kirigami.Units.smallSpacing
-                // 2. CAPA DE FONDO
-                KSvg.FrameSvgItem {
-                    id: backgroundItem
-                    imagePath: "widgets/panel-background"
-                    prefix: ""
-                    z: -1
 
-                    // Altura dinámica basada en icono + padding
-                    readonly property real verticalPadding:  Plasmoid.configuration.iconSize * 0.15
+                // Ancho base fijo
+                readonly property real baseIconsWidth: taskRepeater.count * Plasmoid.configuration.iconSize + Math.max(0, taskRepeater.count - 1) * taskList.spacing
 
-                    height: taskList.height - verticalPadding - shadowItem.margins.top
+                // Crecimiento simétrico por zoom
+                readonly property real currentGrowth: Math.max(0, taskList.iconsTotalWidth - baseIconsWidth) / 2
 
-                    y: (Plasmoid.configuration.iconSize < 48) ? shadowItem.margins.top + (internalCanvas.spacing * 1.5) : shadowItem.margins.top - (internalCanvas.spacing)
+                // Padding vertical proporcional al iconSize — escala en cualquier resolución
+                readonly property real verticalPadding: Plasmoid.configuration.iconSize * 0.15
 
-                    width: taskList.width + internalCanvas.expansionAmount - horizontalMargins
-                    x: shadowItem.margins.left - (internalCanvas.expansionAmount / 2)
-
-                    // Animaciones para suavizar el estiramiento
-                    Behavior on width { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
-                    Behavior on x { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
-
-                    // Respetamos los hints del SVG
-                    anchors.leftMargin: shadowItem.margins.left
-                    anchors.topMargin: shadowItem.margins.top
-                    anchors.rightMargin: shadowItem.margins.right
-                    anchors.bottomMargin: shadowItem.margins.bottom
-                }
-
-                // 1. CAPA DE SOMBRA
                 KSvg.FrameSvgItem {
                     id: shadowItem
                     imagePath: "widgets/panel-background"
                     prefix: "shadow"
                     z: -2
+                    anchors.horizontalCenter: parent.horizontalCenter
 
-                    // Sombra un poco más grande que el fondo
-                    readonly property real shadowPadding:
-                    Plasmoid.configuration.iconSize * 0.15
+                    readonly property real shadowExtra: shadowItem.margins.top + shadowItem.margins.bottom
 
-                    height: taskList.height + shadowPadding
+                    height: Plasmoid.configuration.iconSize + internalCanvas.verticalPadding + shadowExtra
 
-                    y: (Plasmoid.configuration.iconSize < 48) ? (internalCanvas.spacing * 1.5) : -(internalCanvas.spacing)
+                    // Anclado al borde inferior del taskList
+                    y: taskList.spacing + taskList.height - height + shadowExtra/2
 
-                    // --- ANCHO Y POSICIÓN DE SOMBRA DINÁMICA ---
-                    width: taskList.width + internalCanvas.expansionAmount
-                    x: -(internalCanvas.expansionAmount / 2)
 
-                    // Animaciones para que la sombra siga al fondo suavemente
-                    Behavior on width { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
-                    Behavior on x { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
+                    width: internalCanvas.horizontalMargins + internalCanvas.baseIconsWidth + (internalCanvas.currentGrowth * 2)
+
+                    Behavior on width { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
+                    Behavior on x    { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
+                }
+
+                KSvg.FrameSvgItem {
+                    id: backgroundItem
+                    imagePath: "widgets/panel-background"
+                    prefix: ""
+                    z: -1
+                    anchors.horizontalCenter: parent.horizontalCenter
+
+                    height: Plasmoid.configuration.iconSize + internalCanvas.verticalPadding
+
+                    // y calculado desde abajo: borde inferior del fondo toca el borde inferior del panel
+                    y: taskList.spacing + taskList.height - height
+
+                    width: internalCanvas.baseIconsWidth + (internalCanvas.currentGrowth * 2)
+
+                    Behavior on width { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
+                    Behavior on x    { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
                 }
             }
         }
 
-        // --- Componente 2: CUSTOM (Imagen) ---
+        // --- Componente 2: CUSTOM SKIN ---
         Component {
             id: customSkin
             BorderImage {
@@ -581,49 +575,42 @@ PlasmoidItem {
                 asynchronous: false
                 visible: source.toString() !== ""
                 opacity: 1.0
+                readonly property real spacing: Kirigami.Units.largeSpacing
 
-                // 1. Definimos propiedades para animar los laterales
-              readonly property real zoomPadding: Plasmoid.configuration.iconSize * 0.5
+                // Cuánto crecieron los iconos con zoom respecto al base
+                readonly property real currentGrowth: Math.max(0, taskList.maxZoom + spacing * 8
+                ) / 2
 
-              readonly property real spacing: Kirigami.Units.smallSpacing
+                property real dynamicLeftMargin: tasks.skinParams.outLeft
+                + taskList.centerOffset
+                - currentGrowth
 
-              property real dynamicLeftMargin:
-              tasks.isZoomActive
-              ? (tasks.skinParams.outLeft - zoomPadding)
-              : (tasks.skinParams.outLeft + zoomPadding + spacing * 8)
-
-              property real dynamicRightMargin:
-              tasks.isZoomActive
-              ? (tasks.skinParams.outRight - zoomPadding)
-              : (tasks.skinParams.outRight + zoomPadding + spacing * 8)
+                property real dynamicRightMargin: tasks.skinParams.outRight
+                + taskList.centerOffset
+                - currentGrowth
 
                 anchors {
                     fill: parent
                     topMargin: tasks.skinParams.outTop
                     bottomMargin: tasks.skinParams.outBottom
-
-                    // 2. Vinculamos las anclas a nuestras propiedades dinámicas
                     leftMargin: dockBackground.dynamicLeftMargin
                     rightMargin: dockBackground.dynamicRightMargin
                 }
 
-                // 3. Animamos ambos márgenes para un efecto suave de expansión
                 Behavior on dynamicLeftMargin {
-                    NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
+                    NumberAnimation { duration: 150; easing.type: Easing.OutCubic }
                 }
                 Behavior on dynamicRightMargin {
-                    NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
+                    NumberAnimation { duration: 150; easing.type: Easing.OutCubic }
                 }
 
                 source: tasks.skinParams.image
-
                 border {
                     left: tasks.skinParams.left
                     top: tasks.skinParams.top
                     right: tasks.skinParams.right
                     bottom: tasks.skinParams.bottom
                 }
-
                 horizontalTileMode: BorderImage.Stretch
                 verticalTileMode: BorderImage.Stretch
                 z: -1
@@ -666,10 +653,26 @@ PlasmoidItem {
                 property real smoothMouseX: -1
                 property bool insideDock: false
                 property alias animating: taskList.animating
-                readonly property real baseItemWidth: Plasmoid.configuration.iconSize
                 readonly property real spacing: Kirigami.Units.smallSpacing
+                readonly property real _baseSize: Plasmoid.configuration.iconSize
+                readonly property real _sigma: _baseSize * Plasmoid.configuration.amplitud
 
-                width: Math.ceil(taskRepeater.count * (Plasmoid.configuration.iconSize + (Plasmoid.configuration.iconSize * 1.5) / 4) + spacing * 3)
+                readonly property real totalWidth: tasks.taskRepeater.count * _baseSize
+
+                // Calcula valor aproximado de zoom con sigma
+                readonly property real maxZoom: 1.0 * Math.exp(-(Math.pow(0, 2) / (2 * Math.pow(_sigma, 2))))
+                readonly property real baseContentWidth: taskRepeater.count * Plasmoid.configuration.iconSize + Math.max(0, taskRepeater.count - 1) * spacing *3
+                readonly property real maxZoomedWidth: baseContentWidth + (maxZoom - 1.0) * Plasmoid.configuration.iconSize * taskRepeater.count * 0.5
+
+                width: Math.ceil(Math.max(
+                        // Mínimo: ancho base + padding de centerOffset original
+                        taskRepeater.count * (Plasmoid.configuration.iconSize
+                        + (Plasmoid.configuration.iconSize * 1.5) / 4)
+                        + spacing * 3,
+                        // Máximo: ancho con zoom + mismo padding proporcional
+                        maxZoomedWidth * 1.3
+                    ))
+
                 height: tasks.height
 
                 // 2. Calculamos el ancho real de todos los iconos sumados
