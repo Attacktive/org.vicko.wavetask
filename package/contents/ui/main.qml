@@ -577,19 +577,25 @@ PlasmoidItem {
 
                     // Función que comunica con C++
                     function updateBlur() {
-
                         if (!tasks.skinParams.blur) {
                             return;
                         }
 
-                        if (!backgroundItem.Window.window) {
+                        const win = backgroundItem?.Window?.window;
+
+                        if (!win) {
+                            return;
+                        }
+
+                        // opcional: proteger también visible
+                        if (typeof win.visible !== "undefined" && !win.visible) {
                             return;
                         }
 
                         var pos = mapToItem(null, 0, 0);
 
                         backend.setBlurBehind(
-                            backgroundItem.Window.window,
+                            win,
                             true,
                             pos.x,
                             pos.y,
@@ -598,8 +604,9 @@ PlasmoidItem {
                             blurRadius
                         );
 
-                        // forzar repaint para que KWin aplique blur
-                        backgroundItem.Window.window.requestUpdate();
+                        if (win.requestUpdate) {
+                            win.requestUpdate();
+                        }
                     }
 
                     // Monitoreamos cambios en geometría para disparar el blur
@@ -612,13 +619,13 @@ PlasmoidItem {
                     onXChanged: scheduleBlurUpdate()
                     onYChanged: scheduleBlurUpdate()
 
-                    // IMPORTANTE: Limpiar el blur si el componente se destruye o el skin cambia
-                    Component.onDestruction: {
-                        if (backgroundItem.Window.window) {
-                            backend.setBlurBehind(backgroundItem.Window.window, false, 0, 0, 0, 0, 0);
+                    onWindowChanged: scheduleBlurUpdate()
+
+                    onVisibleChanged: {
+                        if (visible) {
+                            scheduleBlurUpdate()
                         }
                     }
-                   Component.onCompleted: updateBlur()
                 }
             }
         }
@@ -672,31 +679,36 @@ PlasmoidItem {
 
                 // Función centralizada para actualizar el blur
                 function updateBlur() {
-                    // Solo ejecutamos si el parámetro blur es true
                     if (!tasks.skinParams.blur) {
                         return;
                     }
 
-                    if (!dockBackground.Window.window) {
+                    const win = dockBackground?.Window?.window;
+
+                    if (!win) {
                         return;
                     }
 
-                    // Calculamos la posición relativa a la ventana (QWindow)
+                    // opcional: proteger también visible
+                    if (typeof win.visible !== "undefined" && !win.visible) {
+                        return;
+                    }
+
                     var pos = mapToItem(null, 0, 0);
 
-                    // Llamada al backend de C++
-                    // Importante: Asegúrate de que 'backend' sea accesible aquí
                     backend.setBlurBehind(
-                        dockBackground.Window.window,
+                        win,
                         true,
                         pos.x,
                         pos.y,
-                        dockBackground.width,  // El ancho real tras aplicar márgenes
-                        dockBackground.height, // El alto real tras aplicar márgenes
+                        width,
+                        height,
                         blurRadius
                     );
 
-                    dockBackground.Window.window.requestUpdate();
+                    if (win.requestUpdate) {
+                        win.requestUpdate();
+                    }
                 }
 
                 // --- CONEXIONES PARA ACTUALIZACIÓN DINÁMICA ---
@@ -711,14 +723,13 @@ PlasmoidItem {
                 onXChanged: scheduleBlurUpdate()
                 onYChanged: scheduleBlurUpdate()
 
-                // IMPORTANTE: Limpiar el blur si el componente se destruye o el skin cambia
-                Component.onDestruction: {
-                    if (dockBackground.Window.window) {
-                        backend.setBlurBehind(dockBackground.Window.window, false, 0, 0, 0, 0, 0);
+                onWindowChanged: scheduleBlurUpdate()
+
+                onVisibleChanged: {
+                    if (visible) {
+                        scheduleBlurUpdate()
                     }
                 }
-
-               Component.onCompleted: updateBlur()
             }
         }
 
