@@ -1,4 +1,4 @@
-# org.kde.plasma.wavetask
+# org.vicko.wavetask
 KDE Plasma 6 task manager with macOS-style dock zoom animation, smart launcher badges, and advanced window management features. It's based on the default task manager of KDE 6.6.
 
 Since Plasma 6.6 does not allow direct access to org.kde.plasma.private.taskmanager, the plugin has had to be compiled, so the installation is no longer just a matter of copying but requires compilation.
