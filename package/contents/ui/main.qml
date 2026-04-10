@@ -876,6 +876,36 @@ PlasmoidItem {
                 }
             }
         }
+
+        /*CairoPenguin {
+            visible: Plasmoid.configuration.cairoPenguinEnabled
+            z: 999
+
+            anchors.bottom: parent.bottom
+
+            minX: taskList.x + taskList.centerOffset
+            maxX: taskList.x + taskList.centerOffset + taskList.iconsTotalWidth - width
+        }*/
+        Loader {
+            id: penguinLoader
+            active: Plasmoid.configuration.cairoPenguinEnabled
+            z: 999
+            anchors.bottom: parent.bottom
+
+            source: "CairoPenguin.qml"
+
+            // Pass the bindings into the loaded component
+            onLoaded: {
+                let calculateMinX = () => taskList.x + taskList.centerOffset;
+                let calculateMaxX = () => taskList.x + taskList.centerOffset + taskList.iconsTotalWidth - item.width;
+
+                item.minX = Qt.binding(calculateMinX);
+                item.maxX = Qt.binding(calculateMaxX);
+            }
+        }
+
+        readonly property Component groupDialogComponent: Qt.createComponent("GroupDialog.qml")
+        property GroupDialog groupDialog
     }
 
     readonly property Component groupDialogComponent: Qt.createComponent("GroupDialog.qml")
