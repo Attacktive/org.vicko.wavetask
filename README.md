@@ -114,6 +114,8 @@ Skins:
 - Tahoe
 - Tahoe Dark
 - coffee
+- Pine
+- Elegantia
 
 What doesn't work:
 
