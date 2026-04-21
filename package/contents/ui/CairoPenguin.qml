@@ -24,14 +24,15 @@ Item {
 
     readonly property list<string> hoverWakeStates: ["sitter", "waiter", "reader", "blocker"]
 
-    readonly property list<string> actionStates: ["bomber", "digger", "exit", "splat", "tumble"]
+    readonly property list<string> actionStates: ["bomber", "digger", "exit", "tumble"]
 
     readonly property list<string> oneShotStates: ["bomber", "exit", "faller", "splat", "tumble", "drownFall", "drownWalk"]
 
     readonly property list<string> terminalStates: ["exit", "drownFall", "drownWalk"]
 
     readonly property list<string> ambientStates: [...movingStates, ...hoverWakeStates]
-    readonly property list<string> allStates: [...ambientStates, ...actionStates]
+
+    readonly property list<string> allStates: [...ambientStates, ...actionStates, ...oneShotStates]
 
     readonly property var baseFrameRateByState: ({
         "basher": 12,
