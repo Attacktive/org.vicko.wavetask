@@ -344,7 +344,7 @@ KCMUtils.SimpleKCM {
 
         QQC2.CheckBox {
             id: cairoPenguinEnabled
-            Kirigami.FormData.label: "Enable Cairo Penguin:"
+            Kirigami.FormData.label: "Show Cairo Penguin:"
             checked: Plasmoid.configuration.cairoPenguinEnabled
         }
     }
