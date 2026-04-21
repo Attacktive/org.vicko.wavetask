@@ -482,6 +482,11 @@ Item {
         interval: 1000
         onTriggered: {
             cairoPenguinRoot.actionLock = false;
+
+            if (cairoPenguinRoot.currentState === "splat") {
+                cairoPenguinRoot.interactionLock = false;
+            }
+
             if (cairoPenguinRoot.terminalStates.includes(cairoPenguinRoot.currentState)) {
                 spriteContainer.visible = false;
                 cairoPenguinRoot.interactionLock = true;
@@ -510,17 +515,6 @@ Item {
         interval: 1200
         onTriggered: {
             cairoPenguinRoot.setState("splat")
-            postClickTimer.interval = cairoPenguinRoot.stateDurationMs("splat")
-            postClickTimer.restart()
-        }
-    }
-
-    Timer {
-        id: postClickTimer
-        interval: 2000
-        onTriggered: {
-            cairoPenguinRoot.interactionLock = false
-            cairoPenguinRoot.pickRandomState()
         }
     }
 
