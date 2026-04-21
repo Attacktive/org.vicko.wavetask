@@ -1,6 +1,7 @@
 import QtQuick
 
 import org.kde.plasma.plasmoid
+import "code/CairoPenguin.js" as Penguin
 
 Item {
     id: cairoPenguinRoot
@@ -8,122 +9,36 @@ Item {
     width: Plasmoid.configuration.iconSize * 2 / 3
     height: Plasmoid.configuration.iconSize * 2 / 3
 
+    opacity: 0.777
+
     property real speed: 0.4
     property int direction: 1
     property real minX: 0
     property real maxX: 0
     property bool dockIsReady: (maxX - minX) > width
 
-    property string currentState: "walker"
+    property string currentStateName: "walker"
+
     property real targetX: 0
     property bool interactionLock: false
     property bool actionLock: false
     property real animationRateScale: 0.6
 
-    readonly property list<string> movingStates: ["basher", "boarder", "bridger", "bridgerWalk", "miner", "rocketLauncher", "walker", "xmasWalker"]
-
-    readonly property list<string> hoverWakeStates: ["sitter", "waiter", "reader", "blocker"]
-
-    readonly property list<string> actionStates: ["bomber", "digger", "exit", "tumble"]
-
-    readonly property list<string> oneShotStates: ["bomber", "exit", "faller", "splat", "tumble", "drownFall", "drownWalk"]
-
-    readonly property list<string> terminalStates: ["exit", "drownFall", "drownWalk"]
-
-    readonly property list<string> ambientStates: [...movingStates, ...hoverWakeStates]
-
-    readonly property list<string> allStates: [...ambientStates, ...actionStates, ...oneShotStates]
-
-    readonly property var baseFrameRateByState: ({
-        "basher": 12,
-        "blocker": 10,
-        "boarder": 1,
-        "bomber": 20,
-        "bridger": 15,
-        "bridgerWalk": 10,
-        "digger": 16,
-        "drownFall": 18,
-        "drownWalk": 18,
-        "exit": 16,
-        "faller": 8,
-        "floater": 8,
-        "miner": 16,
-        "reader": 16,
-        "rocketLauncher": 10,
-        "sitter": 1,
-        "splat": 20,
-        "superman": 8,
-        "tumble": 10,
-        "waiter": 8,
-        "walker": 10,
-        "xmasWalker": 10
-    })
-
-    function frameRateFor(name) {
-        const baseFrameRate = baseFrameRateByState[name];
-        if (typeof baseFrameRate !== "number") {
-            throw new Error(`Unexpected state for frame rate: ${name}`);
-        }
-        return baseFrameRate * animationRateScale;
-    }
-
-    function oneShotFrameSpec(name) {
-        switch (name) {
-        case "bomber":
-            return { frameCount: 16, baseFrameRate: baseFrameRateByState.bomber };
-        case "exit":
-            return { frameCount: 9, baseFrameRate: baseFrameRateByState.exit };
-        case "faller":
-            return { frameCount: 8, baseFrameRate: baseFrameRateByState.faller };
-        case "splat":
-            return { frameCount: 16, baseFrameRate: baseFrameRateByState.splat };
-        case "tumble":
-            return { frameCount: 8, baseFrameRate: baseFrameRateByState.tumble };
-        case "drownFall":
-        case "drownWalk":
-            return { frameCount: 15, baseFrameRate: baseFrameRateByState[name] };
-        default:
-            throw new Error(`Unexpected one-shot state: ${name}`);
-        }
-    }
-
-    function stateDurationMs(name) {
-        const spec = oneShotFrameSpec(name);
-        const effectiveFrameRate = spec.baseFrameRate * animationRateScale;
-        const frameMs = 1000 / effectiveFrameRate;
-        const oneLoopMs = spec.frameCount * frameMs;
-
-        // End slightly before the next loop starts.
-        const safetyMarginMs = frameMs * 0.25;
-        return Math.max(100, Math.floor(oneLoopMs - safetyMarginMs));
-    }
-
-    function pickRandomFrom(states) {
-        if (!states || states.length === 0) {
-            return "";
-        }
-
-        if (states.length === 1) {
-            return states[0];
-        }
-
-        let next = currentState;
-        while (next === currentState) {
-            next = states[Math.floor(Math.random() * states.length)];
-        }
-
-        return next;
+    function getCurrentState() {
+        return Penguin.getState(currentStateName);
     }
 
     function setState(name) {
-        if (!allStates.includes(name)) {
+        if (!Penguin.isValidState(name)) {
+            console.warn(`"${name}" is not a valid state!`);
             return;
         }
 
-        currentState = name;
+        currentStateName = name;
+
         penguinSprite.jumpTo(name);
 
-        actionLock = oneShotStates.includes(name);
+        actionLock = getCurrentState().isOneShot();
         if (actionLock) {
             actionDoneTimer.interval = stateDurationMs(name);
             actionDoneTimer.restart();
@@ -133,19 +48,29 @@ Item {
     }
 
     function pickRandomState() {
-        let next = pickRandomFrom(ambientStates);
+        let next = Penguin.pickRandomAmbient();
         if (next === "") {
             return;
         }
 
         setState(next);
 
-        if (movingStates.includes(next)) {
+        if (getCurrentState().isMoving()) {
             targetX = minX + Math.random() * (maxX - minX);
             direction = targetX > x ? 1 : -1;
         } else {
             targetX = x;
         }
+    }
+
+    function getFrameRate(name) {
+        return Penguin.getState(name)
+            .getFrameRateWithScale(animationRateScale);
+    }
+
+    function stateDurationMs(name) {
+        return Penguin.getState(name)
+            .getDurationMs(animationRateScale);
     }
 
     Item {
@@ -155,7 +80,11 @@ Item {
         transform: Scale {
             origin.x: spriteContainer.width * 2 / 3
             origin.y: spriteContainer.height * 2 / 3
-            xScale: (cairoPenguinRoot.direction < 0 && cairoPenguinRoot.movingStates.includes(cairoPenguinRoot.currentState)) ? -1 : 1
+            xScale: {
+                let toFaceLeft = cairoPenguinRoot.direction < 0 && cairoPenguinRoot.getCurrentState().isMoving();
+
+                return toFaceLeft ? -1 : 1
+            }
         }
 
         SpriteSequence {
@@ -172,7 +101,7 @@ Item {
                 frameHeight: 32
                 frameWidth: 32
                 frameY: cairoPenguinRoot.direction < 0 ? 0 : 32
-                frameRate: cairoPenguinRoot.frameRateFor("basher")
+                frameRate: cairoPenguinRoot.getFrameRate("basher")
             }
 
             Sprite {
@@ -182,7 +111,7 @@ Item {
                 frameHeight: 32
                 frameWidth: 32
                 frameY: 0
-                frameRate: cairoPenguinRoot.frameRateFor("blocker")
+                frameRate: cairoPenguinRoot.getFrameRate("blocker")
             }
 
             Sprite {
@@ -192,7 +121,7 @@ Item {
                 frameHeight: 30
                 frameWidth: 30
                 frameY: cairoPenguinRoot.direction < 0 ? 0 : 30
-                frameRate: cairoPenguinRoot.frameRateFor("boarder")
+                frameRate: cairoPenguinRoot.getFrameRate("boarder")
             }
 
             Sprite {
@@ -202,7 +131,7 @@ Item {
                 frameHeight: 32
                 frameWidth: 32
                 frameY: 0
-                frameRate: cairoPenguinRoot.frameRateFor("bomber")
+                frameRate: cairoPenguinRoot.getFrameRate("bomber")
             }
 
             Sprite {
@@ -212,7 +141,7 @@ Item {
                 frameHeight: 32
                 frameWidth: 32
                 frameY: cairoPenguinRoot.direction < 0 ? 0 : 32
-                frameRate: cairoPenguinRoot.frameRateFor("bridger")
+                frameRate: cairoPenguinRoot.getFrameRate("bridger")
             }
 
             Sprite {
@@ -222,7 +151,7 @@ Item {
                 frameHeight: 32
                 frameWidth: 32
                 frameY: cairoPenguinRoot.direction < 0 ? 0 : 32
-                frameRate: cairoPenguinRoot.frameRateFor("bridgerWalk")
+                frameRate: cairoPenguinRoot.getFrameRate("bridgerWalk")
             }
 
             Sprite {
@@ -232,7 +161,7 @@ Item {
                 frameHeight: 32
                 frameWidth: 32
                 frameY: 0
-                frameRate: cairoPenguinRoot.frameRateFor("digger")
+                frameRate: cairoPenguinRoot.getFrameRate("digger")
             }
 
             Sprite {
@@ -242,7 +171,7 @@ Item {
                 frameHeight: 32
                 frameWidth: 32
                 frameY: cairoPenguinRoot.direction < 0 ? 0 : 32
-                frameRate: cairoPenguinRoot.frameRateFor("drownFall")
+                frameRate: cairoPenguinRoot.getFrameRate("drownFall")
             }
 
             Sprite {
@@ -252,7 +181,7 @@ Item {
                 frameHeight: 32
                 frameWidth: 32
                 frameY: cairoPenguinRoot.direction < 0 ? 0 : 32
-                frameRate: cairoPenguinRoot.frameRateFor("drownWalk")
+                frameRate: cairoPenguinRoot.getFrameRate("drownWalk")
             }
 
             Sprite {
@@ -262,7 +191,7 @@ Item {
                 frameHeight: 32
                 frameWidth: 32
                 frameY: cairoPenguinRoot.direction < 0 ? 0 : 32
-                frameRate: cairoPenguinRoot.frameRateFor("exit")
+                frameRate: cairoPenguinRoot.getFrameRate("exit")
             }
 
             Sprite {
@@ -272,7 +201,7 @@ Item {
                 frameHeight: 32
                 frameWidth: 32
                 frameY: 0
-                frameRate: cairoPenguinRoot.frameRateFor("faller")
+                frameRate: cairoPenguinRoot.getFrameRate("faller")
             }
 
             Sprite {
@@ -282,7 +211,7 @@ Item {
                 frameHeight: 32
                 frameWidth: 32
                 frameY: 0
-                frameRate: cairoPenguinRoot.frameRateFor("floater")
+                frameRate: cairoPenguinRoot.getFrameRate("floater")
             }
 
             Sprite {
@@ -292,7 +221,7 @@ Item {
                 frameHeight: 32
                 frameWidth: 32
                 frameY: cairoPenguinRoot.direction < 0 ? 0 : 32
-                frameRate: cairoPenguinRoot.frameRateFor("miner")
+                frameRate: cairoPenguinRoot.getFrameRate("miner")
             }
 
             Sprite {
@@ -302,7 +231,7 @@ Item {
                 frameHeight: 30
                 frameWidth: 30
                 frameY: 0
-                frameRate: cairoPenguinRoot.frameRateFor("reader")
+                frameRate: cairoPenguinRoot.getFrameRate("reader")
             }
 
             Sprite {
@@ -312,7 +241,7 @@ Item {
                 frameHeight: 32
                 frameWidth: 32
                 frameY: cairoPenguinRoot.direction < 0 ? 0 : 32
-                frameRate: cairoPenguinRoot.frameRateFor("rocketLauncher")
+                frameRate: cairoPenguinRoot.getFrameRate("rocketLauncher")
             }
 
             Sprite {
@@ -322,7 +251,7 @@ Item {
                 frameHeight: 30
                 frameWidth: 30
                 frameY: 0
-                frameRate: cairoPenguinRoot.frameRateFor("sitter")
+                frameRate: cairoPenguinRoot.getFrameRate("sitter")
             }
 
             Sprite {
@@ -332,7 +261,7 @@ Item {
                 frameHeight: 32
                 frameWidth: 32
                 frameY: 0
-                frameRate: cairoPenguinRoot.frameRateFor("splat")
+                frameRate: cairoPenguinRoot.getFrameRate("splat")
             }
 
             Sprite {
@@ -342,7 +271,7 @@ Item {
                 frameHeight: 30
                 frameWidth: 30
                 frameY: 0
-                frameRate: cairoPenguinRoot.frameRateFor("superman")
+                frameRate: cairoPenguinRoot.getFrameRate("superman")
             }
 
             Sprite {
@@ -352,7 +281,7 @@ Item {
                 frameHeight: 32
                 frameWidth: 32
                 frameY: 0
-                frameRate: cairoPenguinRoot.frameRateFor("tumble")
+                frameRate: cairoPenguinRoot.getFrameRate("tumble")
             }
 
             Sprite {
@@ -362,7 +291,7 @@ Item {
                 frameHeight: 32
                 frameWidth: 32
                 frameY: 0
-                frameRate: cairoPenguinRoot.frameRateFor("waiter")
+                frameRate: cairoPenguinRoot.getFrameRate("waiter")
             }
 
             Sprite {
@@ -372,7 +301,7 @@ Item {
                 frameHeight: 32
                 frameWidth: 32
                 frameY: cairoPenguinRoot.direction < 0 ? 0 : 32
-                frameRate: cairoPenguinRoot.frameRateFor("walker")
+                frameRate: cairoPenguinRoot.getFrameRate("walker")
             }
 
             Sprite {
@@ -382,7 +311,7 @@ Item {
                 frameHeight: 44
                 frameWidth: 32
                 frameY: cairoPenguinRoot.direction < 0 ? 0 : 44
-                frameRate: cairoPenguinRoot.frameRateFor("xmasWalker")
+                frameRate: cairoPenguinRoot.getFrameRate("xmasWalker")
             }
         }
     }
@@ -399,10 +328,11 @@ Item {
         running: cairoPenguinRoot.dockIsReady && !cairoPenguinRoot.interactionLock && !cairoPenguinRoot.actionLock
         repeat: true
         onTriggered: {
-            let nextAction = cairoPenguinRoot.pickRandomFrom(cairoPenguinRoot.actionStates);
-            if (nextAction !== "") {
+            let nextAction = Penguin.pickRandomAction();
+            if (nextAction) {
                 cairoPenguinRoot.setState(nextAction);
-                if (cairoPenguinRoot.movingStates.includes(nextAction)) {
+
+                if (cairoPenguinRoot.getCurrentState().isMoving()) {
                     cairoPenguinRoot.targetX = cairoPenguinRoot.minX + Math.random() * (cairoPenguinRoot.maxX - cairoPenguinRoot.minX);
                     cairoPenguinRoot.direction = cairoPenguinRoot.targetX > cairoPenguinRoot.x ? 1 : -1;
                 }
@@ -414,12 +344,12 @@ Item {
 
     Timer {
         interval: 16
-        running: cairoPenguinRoot.movingStates.includes(cairoPenguinRoot.currentState) && !cairoPenguinRoot.interactionLock
+        running: cairoPenguinRoot.getCurrentState().isMoving() && !cairoPenguinRoot.interactionLock
         repeat: true
         onTriggered: {
             cairoPenguinRoot.x += (cairoPenguinRoot.speed * cairoPenguinRoot.direction)
 
-            // 1. THE BOUNCE CHECK (Do this before checking if he reached his target)
+            // 1) Comprobación de rebote antes de evaluar si llegó al objetivo.
             if (cairoPenguinRoot.x >= cairoPenguinRoot.maxX) {
                 cairoPenguinRoot.x = cairoPenguinRoot.maxX
                 cairoPenguinRoot.direction = -1;
@@ -458,8 +388,7 @@ Item {
 
     MouseArea {
         anchors.fill: parent
-        hoverEnabled: true
-        propagateComposedEvents: false
+        hoverEnabled: false
 
         onPressed: function(mouse) {
             cairoPenguinRoot.interactionLock = true
@@ -468,14 +397,11 @@ Item {
             jumpAnimation.restart()
             clickRecoveryTimer.restart()
 
+            // Permite que el clic atraviese al pingüino para interactuar
+            // con los iconos del dock que están justo debajo.
             mouse.accepted = false
         }
 
-        onEntered: {
-            if (!cairoPenguinRoot.interactionLock && cairoPenguinRoot.hoverWakeStates.includes(cairoPenguinRoot.currentState)) {
-                cairoPenguinRoot.pickRandomState()
-            }
-        }
     }
 
     Timer {
@@ -484,11 +410,11 @@ Item {
         onTriggered: {
             cairoPenguinRoot.actionLock = false;
 
-            if (cairoPenguinRoot.currentState === "splat") {
+            if (cairoPenguinRoot.currentStateName === "splat") {
                 cairoPenguinRoot.interactionLock = false;
             }
 
-            if (cairoPenguinRoot.terminalStates.includes(cairoPenguinRoot.currentState)) {
+            if (cairoPenguinRoot.getCurrentState().isTerminal()) {
                 spriteContainer.visible = false;
                 cairoPenguinRoot.interactionLock = true;
                 respawnTimer.restart();
