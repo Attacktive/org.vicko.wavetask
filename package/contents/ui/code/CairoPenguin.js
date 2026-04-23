@@ -1,16 +1,28 @@
 .pragma library
 
 /**
+ * @typedef {Object} PenguinStateConfig
+ * @property {number} [frameRate=10] - Tasa de frames base.
+ * @property {number} [frameCount=1] - Cantidad total de frames de la animación.
+ * @property {PenguinTag[]} [tags=[]] - Etiquetas que definen el comportamiento ("moving", "action", etc.).
+ */
+
+/**
+ * @typedef {"basher" | "blocker" | "boarder" | "bomber" | "bridger" | "bridgerWalk" | "digger" | "drownFall" | "drownWalk" | "exit" | "faller" | "floater" | "miner" | "reader" | "rocketLauncher" | "sitter" | "splat" | "superman" | "tumble" | "waiter" | "walker" | "xmasWalker"} PenguinStateName
+ */
+
+/**
+ * @typedef {"moving" | "action" | "hoverWake" | "oneShot" | "terminal"} PenguinTag
+ */
+
+/**
  * Clase que representa un estado individual de la animación del pingüino.
  * Utiliza desestructuración en el constructor para asignar valores por defecto.
  */
 class PenguinState {
     /**
-     * @param {string} name - el nombre del estado (ej., "basher", "walker").
-     * @param {Object} config - configuración del estado desestructurada.
-     * @param {number} [config.frameRate=10] - tasa de frames base.
-     * @param {number} [config.frameCount=1] - cantidad total de frames de la animación.
-     * @param {string[]} [config.tags=[]] - etiquetas que definen el comportamiento ("moving", "action", etc.).
+     * @param {PenguinStateName} name - el nombre del estado (ej., "basher", "walker").
+     * @param {PenguinStateConfig} [config={}] - configuración del estado desestructurada.
      */
     constructor(name, { frameRate = 10, frameCount = 1, tags = [] } = {}) {
         this.name = name;
@@ -81,7 +93,7 @@ class PenguinState {
 /**
  * Mapa de instancias por nombre de estado.
  *
- * @type {Map<string, PenguinState>}
+ * @type {Map<PenguinStateName, PenguinState>}
  */
 const states = new Map([
     ["basher", new PenguinState("basher", { frameRate: 12, frameCount: 12, tags: ["moving"] })],
@@ -111,20 +123,20 @@ const states = new Map([
 /**
  * Calcula las listas una sola vez al cargar la librería.
  *
- * @type {string[]}
+ * @type {PenguinStateName[]}
  */
 const ambientStateNames = Array.from(states.values())
-    .filter(s => s.isMoving() || s.isHoverWake())
-    .map(s => s.name);
+    .filter(state => state.isMoving() || state.isHoverWake())
+    .map(({ name }) => name);
 
 const actionStateNames = Array.from(states.values())
-    .filter(s => s.isAction())
-    .map(s => s.name);
+    .filter(state => state.isAction())
+    .map(({ name }) => name);
 
 /**
  * Comprueba si el string corresponde a un estado registrado.
  *
- * @param {string} name
+ * @param {PenguinStateName} name
  * @returns {boolean}
  */
 function isValidState(name) {
@@ -134,7 +146,7 @@ function isValidState(name) {
 /**
  * Recupera la instancia completa de PenguinState.
  *
- * @param {string} name
+ * @param {PenguinStateName} name
  * @returns {PenguinState}
  * @throws {Error} si el estado no existe en el mapa.
  */
@@ -149,7 +161,7 @@ function getState(name) {
 /**
  * Selecciona un estado aleatorio de la lista de estados ambientales.
  *
- * @returns {string}
+ * @returns {PenguinStateName}
  */
 function pickRandomAmbient() {
     return _pickRandomFrom(ambientStateNames);
@@ -158,7 +170,7 @@ function pickRandomAmbient() {
 /**
  * Selecciona un estado aleatorio de la lista de acciones activas.
  *
- * @returns {string}
+ * @returns {PenguinStateName}
  */
 function pickRandomAction() {
     return _pickRandomFrom(actionStateNames);
@@ -167,8 +179,8 @@ function pickRandomAction() {
 /**
  * Función auxiliar interna
  *
- * @param {string[]} stateList
- * @returns {string}
+ * @param {PenguinStateName[]} stateList
+ * @returns {PenguinStateName}
  * @private
  */
 function _pickRandomFrom(stateList) {
