@@ -86,6 +86,7 @@ class PenguinState {
         const effectiveRate = this.getFrameRateWithScale(scale);
         const frameMs = 1000 / effectiveRate;
         const totalMs = this.frameCount * frameMs;
+
         return Math.max(100, Math.floor(totalMs - (frameMs * 0.25)));
     }
 }
@@ -99,22 +100,22 @@ const states = new Map([
     ["basher", new PenguinState("basher", { frameRate: 12, frameCount: 12, tags: ["moving"] })],
     ["blocker", new PenguinState("blocker", { frameRate: 10, frameCount: 6, tags: ["hoverWake"] })],
     ["boarder", new PenguinState("boarder", { frameRate: 1, frameCount: 1, tags: ["moving"] })],
-    ["bomber", new PenguinState("bomber", { frameRate: 20, frameCount: 16, tags: ["action", "oneShot"] })],
+    ["bomber", new PenguinState("bomber", { frameRate: 10, frameCount: 16, tags: ["action", "oneShot"] })],
     ["bridger", new PenguinState("bridger", { frameRate: 15, frameCount: 15, tags: ["moving"] })],
     ["bridgerWalk", new PenguinState("bridgerWalk", { frameRate: 10, frameCount: 4, tags: ["moving"] })],
     ["digger", new PenguinState("digger", { frameRate: 16, frameCount: 14, tags: ["action"] })],
     ["drownFall", new PenguinState("drownFall", { frameRate: 18, frameCount: 15, tags: ["oneShot", "terminal"] })],
     ["drownWalk", new PenguinState("drownWalk", { frameRate: 18, frameCount: 15, tags: ["oneShot", "terminal"] })],
-    ["exit", new PenguinState("exit", { frameRate: 16, frameCount: 9, tags: ["action", "oneShot", "terminal"] })],
+    ["exit", new PenguinState("exit", { frameRate: 6, frameCount: 9, tags: ["action", "oneShot", "terminal"] })],
     ["faller", new PenguinState("faller", { frameRate: 8, frameCount: 8, tags: ["oneShot"] })],
     ["floater", new PenguinState("floater", { frameRate: 8, frameCount: 8, tags: [] })],
     ["miner", new PenguinState("miner", { frameRate: 16, frameCount: 12, tags: ["moving"] })],
     ["reader", new PenguinState("reader", { frameRate: 16, frameCount: 12, tags: ["hoverWake"] })],
     ["rocketLauncher", new PenguinState("rocketLauncher", { frameRate: 10, frameCount: 7, tags: ["moving"] })],
     ["sitter", new PenguinState("sitter", { frameRate: 1, frameCount: 1, tags: ["hoverWake"] })],
-    ["splat", new PenguinState("splat", { frameRate: 20, frameCount: 16, tags: ["oneShot"] })],
+    ["splat", new PenguinState("splat", { frameRate: 13, frameCount: 16, tags: ["oneShot"] })],
     ["superman", new PenguinState("superman", { frameRate: 8, frameCount: 8, tags: [] })],
-    ["tumble", new PenguinState("tumble", { frameRate: 10, frameCount: 8, tags: ["action", "oneShot"] })],
+    ["tumble", new PenguinState("tumble", { frameRate: 3, frameCount: 8, tags: ["action", "oneShot"] })],
     ["waiter", new PenguinState("waiter", { frameRate: 8, frameCount: 6, tags: ["hoverWake"] })],
     ["walker", new PenguinState("walker", { frameRate: 10, frameCount: 8, tags: ["moving"] })],
     ["xmasWalker", new PenguinState("xmasWalker", { frameRate: 10, frameCount: 8, tags: ["moving"] })]
@@ -152,7 +153,7 @@ function isValidState(name) {
  */
 function getState(name) {
     if (!states.has(name)) {
-        throw new Error(`Estado no encontrado: ${name}`);
+        throw new Error(`There's no state named: ${name}`);
     }
 
     return states.get(name);
