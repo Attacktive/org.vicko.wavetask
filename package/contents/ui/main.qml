@@ -886,7 +886,7 @@ PlasmoidItem {
 
             source: "CairoPenguin.qml"
 
-            // Pass the bindings into the loaded component
+            // Pasa los enlaces (bindings) al componente cargado
             onLoaded: {
                 let calculateMinX = () => taskList.x + taskList.centerOffset;
                 let calculateMaxX = () => calculateMinX() + taskList.iconsTotalWidth - item.width;
