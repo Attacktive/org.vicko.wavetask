@@ -80,7 +80,7 @@ PlasmoidItem {
   // --- LÓGICA DE SKINS ---
   property int topoutimage: 0
   property var skinParams: ({
-      image: "", imagetask: "", blur: false, blurRadius: 18,
+      image: "", imagetask: "", blur: false, blurRadius: 18, positionTaskIndicator: 9,
       left: 0, top: 0, right: 0, bottom: 0,
       outLeft: 0, outTop: 0, outRight: 0, outBottom: 0
   })
@@ -120,6 +120,7 @@ PlasmoidItem {
                   imagetask: skinFolderUrl + config.imagetask,
                   blur: config.blur,
                   blurRadius: config.blurRadius,
+                  positionTaskIndicator: config.positionTaskIndicator,
                   left: config.leftMargin,
                   top: config.topMargin,
                   right: config.rightMargin,
@@ -534,7 +535,7 @@ PlasmoidItem {
                 readonly property real currentGrowth: Math.max(0, (taskList.iconsTotalWidth + taskList.spacing * 2) - baseIconsWidth) / 2
 
                 // Padding vertical proporcional al iconSize — escala en cualquier resolución
-                readonly property real verticalPadding: Plasmoid.configuration.iconSize * 0.15
+                readonly property real verticalPadding: Plasmoid.configuration.iconSize * 0.20
 
                 KSvg.FrameSvgItem {
                     id: shadowItem

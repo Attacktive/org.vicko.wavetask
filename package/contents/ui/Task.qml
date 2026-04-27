@@ -1,9 +1,9 @@
 /*
-    SPDX-FileCopyrightText: 2012-2013 Eike Hein <hein@kde.org>
-    SPDX-FileCopyrightText: 2024 Nate Graham <nate@kde.org>
-
-    SPDX-License-Identifier: GPL-2.0-or-later
-*/
+ *   SPDX-FileCopyrightText: 2012-2013 Eike Hein <hein@kde.org>
+ *   SPDX-FileCopyrightText: 2024 Nate Graham <nate@kde.org>
+ *
+ *   SPDX-License-Identifier: GPL-2.0-or-later
+ */
 
 pragma ComponentBehavior: Bound
 
@@ -32,20 +32,20 @@ PlasmaCore.ToolTipArea {
     rotation: Plasmoid.configuration.reverseMode && Plasmoid.formFactor === PlasmaCore.Types.Vertical ? 180 : 0
 
     implicitHeight: inPopup
-                    ? LayoutMetrics.preferredHeightInPopup()
-                    : (tasksRoot.vertical
-                        ? LayoutMetrics.preferredMinHeight()
-                        : Math.max(tasksRoot.height / Plasmoid.configuration.maxStripes,
-                             LayoutMetrics.preferredMinHeight()))
+    ? LayoutMetrics.preferredHeightInPopup()
+    : (tasksRoot.vertical
+    ? LayoutMetrics.preferredMinHeight()
+    : Math.max(tasksRoot.height / Plasmoid.configuration.maxStripes,
+               LayoutMetrics.preferredMinHeight()))
     implicitWidth: tasksRoot.vertical
-        ? Math.max(LayoutMetrics.preferredMinWidth(), Math.min(LayoutMetrics.preferredMaxWidth(), tasksRoot.width / Plasmoid.configuration.maxStripes))
-        : 0
+    ? Math.max(LayoutMetrics.preferredMinWidth(), Math.min(LayoutMetrics.preferredMaxWidth(), tasksRoot.width / Plasmoid.configuration.maxStripes))
+    : 0
 
     Layout.fillWidth: true
     Layout.fillHeight: !inPopup
     Layout.maximumWidth: tasksRoot.vertical
-        ? -1
-        : ((model.IsLauncher && !tasksRoot.iconsOnly) ? tasksRoot.height / taskList.rows : LayoutMetrics.preferredMaxWidth())
+    ? -1
+    : ((model.IsLauncher && !tasksRoot.iconsOnly) ? tasksRoot.height / taskList.rows : LayoutMetrics.preferredMaxWidth())
     Layout.maximumHeight: tasksRoot.vertical ? LayoutMetrics.preferredMaxHeight() : -1
 
     required property var model
@@ -77,8 +77,8 @@ PlasmaCore.ToolTipArea {
     readonly property bool muted: hasAudioStream && audioStreams.every(item => item.muted)
 
     readonly property bool highlighted: (inPopup && activeFocus) || (!inPopup && containsMouse)
-        || (task.contextMenu && task.contextMenu.status === PlasmaExtras.Menu.Open)
-        || (!!tasksRoot.groupDialog && tasksRoot.groupDialog.visualParent === task)
+    || (task.contextMenu && task.contextMenu.status === PlasmaExtras.Menu.Open)
+    || (!!tasksRoot.groupDialog && tasksRoot.groupDialog.visualParent === task)
 
     active: !inPopup && !tasksRoot.groupDialog && task.contextMenu?.status !== PlasmaExtras.Menu.Open
     interactive: model.IsWindow || mainItem.playerData
@@ -138,68 +138,68 @@ PlasmaCore.ToolTipArea {
             easing.type: Easing.OutCubic
         }
     }
- /*   onXChanged: {
-        if (!completed) {
-            return;
-        }
-        if (oldX < 0) {
-            oldX = x;
-            return;
-        }
-        moveAnim.x = oldX - x + translateTransform.x;
-        moveAnim.y = translateTransform.y;
-        oldX = x;
-        moveAnim.restart();
-    }
-    onYChanged: {
-        if (!completed) {
-            return;
-        }
-        if (oldY < 0) {
-            oldY = y;
-            return;
-        }
-        moveAnim.y = oldY - y + translateTransform.y;
-        moveAnim.x = translateTransform.x;
-        oldY = y;
-        moveAnim.restart();
-    }
+    /*   onXChanged: {
+     *       if (!completed) {
+     *           return;
+}
+if (oldX < 0) {
+    oldX = x;
+    return;
+}
+moveAnim.x = oldX - x + translateTransform.x;
+moveAnim.y = translateTransform.y;
+oldX = x;
+moveAnim.restart();
+}
+onYChanged: {
+if (!completed) {
+    return;
+}
+if (oldY < 0) {
+    oldY = y;
+    return;
+}
+moveAnim.y = oldY - y + translateTransform.y;
+moveAnim.x = translateTransform.x;
+oldY = y;
+moveAnim.restart();
+}
 
-    property real oldX: -1
-    property real oldY: -1
-    SequentialAnimation {
-        id: moveAnim
-        property real x
-        property real y
-        onRunningChanged: {
-            if (running) {
-                ++task.parent.animationsRunning;
-            } else {
-                --task.parent.animationsRunning;
-            }
-        }
-        ParallelAnimation {
-            NumberAnimation {
-                target: translateTransform
-                properties: "x"
-                from: moveAnim.x
-                to: 0
-                easing.type: Easing.OutQuad
-                duration: Kirigami.Units.longDuration
-            }
-            NumberAnimation {
-                target: translateTransform
-                properties: "y"
-                from: moveAnim.y
-                to: 0
-                easing.type: Easing.OutQuad
-                duration: Kirigami.Units.longDuration
-            }
-        }
-    }
-    transform: Translate {
-        id: translateTransform
-    } */
+property real oldX: -1
+property real oldY: -1
+SequentialAnimation {
+id: moveAnim
+property real x
+property real y
+onRunningChanged: {
+if (running) {
+    ++task.parent.animationsRunning;
+} else {
+    --task.parent.animationsRunning;
+}
+}
+ParallelAnimation {
+NumberAnimation {
+target: translateTransform
+properties: "x"
+from: moveAnim.x
+to: 0
+easing.type: Easing.OutQuad
+duration: Kirigami.Units.longDuration
+}
+NumberAnimation {
+target: translateTransform
+properties: "y"
+from: moveAnim.y
+to: 0
+easing.type: Easing.OutQuad
+duration: Kirigami.Units.longDuration
+}
+}
+}
+transform: Translate {
+id: translateTransform
+} */
 
     Accessible.name: model.display
     Accessible.description: {
@@ -218,19 +218,19 @@ PlasmaCore.ToolTipArea {
 
         if (model.IsGroupParent) {
             switch (Plasmoid.configuration.groupedTaskVisualization) {
-            case 0:
-                break; // Use the default description
-            case 1: {
-                return `${i18nc("@info:usagetip %1 task name", "Show Task tooltip for %1", model.display)}; ${smartLauncherDescription}`;
-            }
-            case 2: {
-                if (effectWatcher.registered) {
-                    return `${i18nc("@info:usagetip %1 task name", "Show windows side by side for %1", model.display)}; ${smartLauncherDescription}`;
+                case 0:
+                    break; // Use the default description
+                case 1: {
+                    return `${i18nc("@info:usagetip %1 task name", "Show Task tooltip for %1", model.display)}; ${smartLauncherDescription}`;
                 }
-                // fallthrough
-            }
-            default:
-                return `${i18nc("@info:usagetip %1 task name", "Open textual list of windows for %1", model.display)}; ${smartLauncherDescription}`;
+                case 2: {
+                    if (effectWatcher.registered) {
+                        return `${i18nc("@info:usagetip %1 task name", "Show windows side by side for %1", model.display)}; ${smartLauncherDescription}`;
+                    }
+                    // fallthrough
+                }
+                default:
+                    return `${i18nc("@info:usagetip %1 task name", "Open textual list of windows for %1", model.display)}; ${smartLauncherDescription}`;
             }
         }
 
@@ -284,9 +284,9 @@ PlasmaCore.ToolTipArea {
         hideToolTip();
 
         if (!inPopup && !tasksRoot.vertical
-                && !Plasmoid.configuration.separateLaunchers) {
+            && !Plasmoid.configuration.separateLaunchers) {
             tasksRoot.requestLayout();
-        }
+            }
     }
 
     onSmartLauncherEnabledChanged: {
@@ -341,8 +341,8 @@ PlasmaCore.ToolTipArea {
 
     function modelIndex(): /*QModelIndex*/ var {
         return inPopup
-            ? tasksModel.makeModelIndex(groupDialog.visualParent.index, index)
-            : tasksModel.makeModelIndex(index);
+        ? tasksModel.makeModelIndex(groupDialog.visualParent.index, index)
+        : tasksModel.makeModelIndex(index);
     }
 
     function showContextMenu(args: var): void {
@@ -400,11 +400,11 @@ PlasmaCore.ToolTipArea {
             || (tasksRoot.toolTipOpenedByClick === null && !active)
             || (tasksRoot.toolTipOpenedByClick !== null && tasksRoot.toolTipOpenedByClick !== this)) {
             return;
-        }
+            }
 
-        mainItem.blockingUpdates = (mainItem.isGroup !== model.IsGroupParent); // BUG 464597 Force unload the previous component
+            mainItem.blockingUpdates = (mainItem.isGroup !== model.IsGroupParent); // BUG 464597 Force unload the previous component
 
-        mainItem.parentTask = this;
+            mainItem.parentTask = this;
         mainItem.rootIndex = tasksModel.makeModelIndex(index, -1);
 
         mainItem.appName = Qt.binding(() => model.AppName);
@@ -517,7 +517,7 @@ PlasmaCore.ToolTipArea {
             fill: parent
 
             topMargin: (!task.tasksRoot.vertical && taskList.rows > 1) ? LayoutMetrics.iconMargin : 0
-            bottomMargin: (!task.tasksRoot.vertical && taskList.rows > 1) ? LayoutMetrics.iconMargin : 0
+            bottomMargin: (!task.tasksRoot.vertical && taskList.rows > 1) ? LayoutMetrics.iconMargin : - Kirigami.Units.gridUnit / tasks.skinParams.positionTaskIndicator
             leftMargin: ((task.inPopup || task.tasksRoot.vertical) && taskList.columns > 1) ? LayoutMetrics.iconMargin : 0
             rightMargin: ((task.inPopup || task.tasksRoot.vertical) && taskList.columns > 1) ? LayoutMetrics.iconMargin : 0
         }
@@ -527,7 +527,7 @@ PlasmaCore.ToolTipArea {
         property string basePrefix: "normal"
         prefix: isHovered ? TaskTools.taskPrefixHovered(basePrefix, Plasmoid.location) : TaskTools.taskPrefix(basePrefix, Plasmoid.location)
 
-   //     prefix: isHovered ? TaskTools.taskPrefixHovered(basePrefix, Plasmoid.location) : TaskTools.taskPrefix(basePrefix, Plasmoid.location)
+        //     prefix: isHovered ? TaskTools.taskPrefixHovered(basePrefix, Plasmoid.location) : TaskTools.taskPrefix(basePrefix, Plasmoid.location)
 
         // Avoid repositioning delegate item after dragFinished
         DragHandler {
@@ -559,8 +559,8 @@ PlasmaCore.ToolTipArea {
                         dragHelper.Drag.imageSource = result.url;
                         dragHelper.Drag.mimeData = {
                             "text/x-orgkdeplasmataskmanager_taskurl": backend.tryDecodeApplicationsUrl(model.LauncherUrlWithoutIcon).toString(),
-                            [model.MimeType]: model.MimeData,
-                            "application/x-orgkdeplasmataskmanager_taskbuttonitem": model.MimeData,
+                                     [model.MimeType]: model.MimeData,
+                                     "application/x-orgkdeplasmataskmanager_taskbuttonitem": model.MimeData,
                         };
                         dragHelper.Drag.active = dragHandler.active;
                     });
@@ -583,137 +583,160 @@ PlasmaCore.ToolTipArea {
         source: "TaskProgressOverlay.qml"
     }
 
-    Loader {
-        id: iconBox
+        Loader {
+            id: iconBox
 
-        anchors.bottom: parent.bottom
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.verticalCenterOffset: -5
-        anchors.bottomMargin: 0
-
-        SequentialAnimation {
-            id: bounceAnimation
-            running: task.model.IsStartup || task.model.IsDemandingAttention || (task.smartLauncherItem && task.smartLauncherItem.urgent)
-            loops: Animation.Infinite
-            alwaysRunToEnd: true
-
-            // Calculamos la altura del salto considerando el factor de escala (zoom)
-            property real jumpHeight: {
-                let currentSize = Plasmoid.configuration.iconSize * zoomFactor;
-                let idealJump = currentSize * 0.6; // Salto base: 60% del tamaño del icono
-
-                // Calculamos el espacio disponible para evitar que el icono se corte con el borde del panel
-                let headroom = Math.max(0, tasksRoot.height - Plasmoid.configuration.iconSize);
-
-                // Limitamos el salto al espacio real disponible
-                return Math.min(idealJump, headroom);
-            }
-
-            // Animación de ascenso (impulso)
-            NumberAnimation {
-                target: iconBox
-                property: "anchors.bottomMargin"
-                from: 0
-                to: bounceAnimation.jumpHeight
-                duration: 300
-                easing.type: Easing.OutQuad
-            }
-
-            // Animación de descenso (gravedad)
-            NumberAnimation {
-                target: iconBox
-                property: "anchors.bottomMargin"
-                to: 0
-                duration: 300
-                easing.type: Easing.InQuad
-            }
-        }
-
-        // Mantenemos el contenedor con un tamaño fijo
-        width: Plasmoid.configuration.iconSize
-        height: Plasmoid.configuration.iconSize
-
-        // El zoom se aplica solo como transformación visual al contenedor completo
-        scale: zoomFactor
-        transformOrigin: Item.Bottom
-
-        z: highlighted ? 100 : 1 // Asegura que el icono activo esté arriba pero no bloquee eventos
-
-        asynchronous: true
-        active: task.smartLauncherItem && task.smartLauncherItem.countVisible
-        source: "TaskBadgeOverlay.qml"
-
-        function adjustMargin(isVertical: bool, size: real, margin: real): real {
-            if (!size) {
-                return margin;
-            }
-
-            var margins = isVertical ? LayoutMetrics.horizontalMargins() : LayoutMetrics.verticalMargins();
-
-            if ((size - margins) < Kirigami.Units.iconSizes.small) {
-                return Math.ceil((margin * (Kirigami.Units.iconSizes.small / size)) / 2);
-            }
-
-            return margin;
-        }
-
-        Kirigami.Icon {
-            id: icon
+            // Mantenemos el contenedor con un tamaño fijo
             width: Plasmoid.configuration.iconSize
             height: Plasmoid.configuration.iconSize
 
-            implicitWidth: width
-            implicitHeight: height
-
-            // usamos para asegurar rendimiento
-            smooth: true
-            antialiasing: true
-            source: model.decoration
-
-            anchors.horizontalCenter: parent.horizontalCenter
             anchors.bottom: parent.bottom
-        }
+            anchors.horizontalCenter: parent.horizontalCenter
+           // anchors.verticalCenterOffset: -5
+            anchors.bottomMargin: 0
 
-        states: [
-            // Using a state transition avoids a binding loop between label.visible and
-            // the text label margin, which derives from the icon width.
-            State {
-                name: "standalone"
-                when: !label.visible && task.parent
+            property int baseRenderSize: Plasmoid.configuration.iconSize * 2
 
-                AnchorChanges {
-                    target: iconBox
-                    anchors.left: undefined
-                    anchors.horizontalCenter: parent.horizontalCenter
+            SequentialAnimation {
+                id: bounceAnimation
+                running: task.model.IsStartup || task.model.IsDemandingAttention || (task.smartLauncherItem && task.smartLauncherItem.urgent)
+                loops: Animation.Infinite
+                alwaysRunToEnd: true
+
+                // Calculamos la altura del salto considerando el factor de escala (zoom)
+                property real jumpHeight: {
+                    let currentSize = Plasmoid.configuration.iconSize * zoomFactor;
+                    let idealJump = currentSize * 0.6; // Salto base: 60% del tamaño del icono
+
+                    // Calculamos el espacio disponible para evitar que el icono se corte con el borde del panel
+                    let headroom = Math.max(0, tasksRoot.height - Plasmoid.configuration.iconSize);
+
+                    // Limitamos el salto al espacio real disponible
+                    return Math.min(idealJump, headroom);
                 }
 
-                PropertyChanges {
+                // Animación de ascenso (impulso)
+                NumberAnimation {
                     target: iconBox
-                    anchors.leftMargin: 0
-                    width: Math.min(task.parent.minimumWidth, tasks.height)
-                    - adjustMargin(true, task.width, taskFrame.margins.left)
-                    - adjustMargin(true, task.width, taskFrame.margins.right)
+                    property: "anchors.bottomMargin"
+                    from: 0
+                    to: bounceAnimation.jumpHeight
+                    duration: 300
+                    easing.type: Easing.OutQuad
+                }
+
+                // Animación de descenso (gravedad)
+                NumberAnimation {
+                    target: iconBox
+                    property: "anchors.bottomMargin"
+                    to: 0
+                    duration: 300
+                    easing.type: Easing.InQuad
                 }
             }
-        ]
 
-        // Reflejo de iconos optimizado
+            // El zoom se aplica solo como transformación visual al contenedor completo
+            scale: zoomFactor
+            transformOrigin: Item.Bottom
+
+            z: highlighted ? 100 : 1 // Asegura que el icono activo esté arriba pero no bloquee eventos
+
+            asynchronous: true
+            active: task.smartLauncherItem && task.smartLauncherItem.countVisible
+            source: "TaskBadgeOverlay.qml"
+
+            function adjustMargin(isVertical: bool, size: real, margin: real): real {
+                if (!size) {
+                    return margin;
+                }
+
+                var margins = isVertical ? LayoutMetrics.horizontalMargins() : LayoutMetrics.verticalMargins();
+
+                if ((size - margins) < Kirigami.Units.iconSizes.small) {
+                    return Math.ceil((margin * (Kirigami.Units.iconSizes.small / size)) / 2);
+                }
+
+                return margin;
+            }
+
+            Kirigami.Icon {
+                id: icon
+
+                width: iconBox.baseRenderSize
+                height: iconBox.baseRenderSize
+
+                source: model.decoration
+
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: Kirigami.Units.smallSpacing
+
+                transformOrigin: Item.Bottom
+
+                scale: 1 / (iconBox.baseRenderSize / iconBox.width)
+
+                smooth: true
+                antialiasing: true
+            }
+
+            states: [
+                // Using a state transition avoids a binding loop between label.visible and
+                // the text label margin, which derives from the icon width.
+                State {
+                    name: "standalone"
+                    when: !label.visible && task.parent
+
+                    AnchorChanges {
+                        target: iconBox
+                        anchors.left: undefined
+                        anchors.horizontalCenter: parent.horizontalCenter
+                    }
+
+                    PropertyChanges {
+                        target: iconBox
+                        anchors.leftMargin: 0
+                        width: Math.min(task.parent.minimumWidth, tasks.height)
+                        - adjustMargin(true, task.width, taskFrame.margins.left)
+                        - adjustMargin(true, task.width, taskFrame.margins.right)
+                    }
+                }
+            ]
+
+            Loader {
+                anchors.centerIn: parent
+                width: Plasmoid.configuration.iconSize
+                height: Plasmoid.configuration.iconSize
+                active: model.IsStartup
+                sourceComponent: busyIndicator
+            }
+        }
+
+        Item {
+            id: iconReflection   // para calculo preciso de reflejo
+
+            width: Plasmoid.configuration.iconSize
+            height: Plasmoid.configuration.iconSize
+
+
+            anchors.bottom: parent.bottom
+            anchors.horizontalCenter: parent.horizontalCenter
+            // anchors.verticalCenterOffset: -5
+            anchors.bottomMargin: 0
+
+        }
+        // REFLEJO FUERA DEL LOADER
         Item {
             id: reflectionContainer
-            // El reflejo nace de la base del icono fijo
-            anchors.top: icon.bottom
-            // Si el ícono sube X, el reflejo baja X respecto al suelo (distancia total = 2X)
-            anchors.topMargin: iconBox.anchors.bottomMargin * 2
 
-            anchors.horizontalCenter: icon.horizontalCenter
-            anchors.horizontalCenterOffset: -4
+            anchors.top: iconReflection.bottom
+            anchors.horizontalCenter: iconReflection.horizontalCenter
 
-            // Tamaño fijo para el reflejo
-            width: Plasmoid.configuration.iconSize
-            height: Plasmoid.configuration.iconSize / 2
+            width: iconReflection.width
+            height: iconReflection.height / 2
+
             clip: true
-            opacity: 0.5
-            z: -1
+            opacity: 0.4
+            z: iconReflection.z - 1
             visible: Plasmoid.configuration.showReflection
 
             Kirigami.Icon {
@@ -736,20 +759,11 @@ PlasmaCore.ToolTipArea {
             }
         }
 
-        Loader {
-            anchors.centerIn: parent
-            width: Plasmoid.configuration.iconSize
-            height: Plasmoid.configuration.iconSize
-            active: model.IsStartup
-            sourceComponent: busyIndicator
-        }
-    }
-
     PlasmaComponents3.Label {
         id: label
 
         visible: (task.inPopup || !task.tasksRoot.iconsOnly && !task.model.IsLauncher
-            && (parent.width - iconBox.height - Kirigami.Units.smallSpacing) >= LayoutMetrics.spaceRequiredToShowText())
+        && (parent.width - iconBox.height - Kirigami.Units.smallSpacing) >= LayoutMetrics.spaceRequiredToShowText())
 
         anchors {
             fill: parent
@@ -831,8 +845,8 @@ PlasmaCore.ToolTipArea {
         completed = true;
     }
     Component.onDestruction: {
-       /* if (moveAnim.running) {
-            (task.parent as TaskList).animationsRunning -= 1;
-        } */
+        /* if (moveAnim.running) {
+         *           (task.parent as TaskList).animationsRunning -= 1;
+    } */
     }
 }
