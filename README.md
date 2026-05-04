@@ -40,12 +40,14 @@ If you need to install it on Plasma 6.5 or lower, I recommend you do it from her
 Using an AUR helper (paru, yay, etc.):
 
 ```sh
-yay -S wavetask
+yay -S wavetask      # stable release (recommended)
+yay -S wavetask-git  # bleeding edge version
 ```
 
 Manual installation:
 
 ```sh
+# Replace 'wavetask' with 'wavetask-git' for the bleeding edge version
 git clone https://aur.archlinux.org/wavetask.git
 cd wavetask
 makepkg -si
