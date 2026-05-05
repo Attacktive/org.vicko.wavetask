@@ -1,7 +1,7 @@
 %undefine _cmake_in_source_build
 
 Name:           wavetask
-Version:        6.6.0
+Version:        git-050526
 Release:        1%{?dist}
 Summary:        Reusable Qt6 QML Task Manager Plugin for Plasma 6
 
