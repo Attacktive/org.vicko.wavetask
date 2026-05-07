@@ -516,7 +516,7 @@ id: translateTransform
         anchors {
             fill: parent
 
-            topMargin: (!task.tasksRoot.vertical && taskList.rows > 1) ? LayoutMetrics.iconMargin : 0
+            topMargin: (!task.tasksRoot.vertical && taskList.rows > 1) ? LayoutMetrics.iconMargin : Math.round(parent.height - Plasmoid.configuration.iconSize) - Kirigami.Units.smallSpacing
             bottomMargin: (!task.tasksRoot.vertical && taskList.rows > 1) ? LayoutMetrics.iconMargin : - Kirigami.Units.gridUnit / tasks.skinParams.positionTaskIndicator
             leftMargin: ((task.inPopup || task.tasksRoot.vertical) && taskList.columns > 1) ? LayoutMetrics.iconMargin : 0
             rightMargin: ((task.inPopup || task.tasksRoot.vertical) && taskList.columns > 1) ? LayoutMetrics.iconMargin : 0
@@ -638,8 +638,6 @@ id: translateTransform
             // El zoom se aplica solo como transformación visual al contenedor completo
             scale: zoomFactor
             transformOrigin: Item.Bottom
-
-            z: highlighted ? 100 : 1 // Asegura que el icono activo esté arriba pero no bloquee eventos
 
             asynchronous: true
             active: task.smartLauncherItem && task.smartLauncherItem.countVisible
