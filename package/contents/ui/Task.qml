@@ -148,68 +148,6 @@ PlasmaCore.ToolTipArea {
             easing.type: Easing.OutCubic
         }
     }
-    /*   onXChanged: {
-     *       if (!completed) {
-     *           return;
-}
-if (oldX < 0) {
-    oldX = x;
-    return;
-}
-moveAnim.x = oldX - x + translateTransform.x;
-moveAnim.y = translateTransform.y;
-oldX = x;
-moveAnim.restart();
-}
-onYChanged: {
-if (!completed) {
-    return;
-}
-if (oldY < 0) {
-    oldY = y;
-    return;
-}
-moveAnim.y = oldY - y + translateTransform.y;
-moveAnim.x = translateTransform.x;
-oldY = y;
-moveAnim.restart();
-}
-
-property real oldX: -1
-property real oldY: -1
-SequentialAnimation {
-id: moveAnim
-property real x
-property real y
-onRunningChanged: {
-if (running) {
-    ++task.parent.animationsRunning;
-} else {
-    --task.parent.animationsRunning;
-}
-}
-ParallelAnimation {
-NumberAnimation {
-target: translateTransform
-properties: "x"
-from: moveAnim.x
-to: 0
-easing.type: Easing.OutQuad
-duration: Kirigami.Units.longDuration
-}
-NumberAnimation {
-target: translateTransform
-properties: "y"
-from: moveAnim.y
-to: 0
-easing.type: Easing.OutQuad
-duration: Kirigami.Units.longDuration
-}
-}
-}
-transform: Translate {
-id: translateTransform
-} */
 
     Accessible.name: model.display
     Accessible.description: {
@@ -623,19 +561,16 @@ id: translateTransform
 
            anchors.bottom: ((!tasksRoot.vertical) && Plasmoid.location === PlasmaCore.Types.BottomEdge)
            ? parent.bottom
-           : undefined
+           : parent.bottom
 
-           anchors.top: ((!tasksRoot.vertical) && Plasmoid.location === PlasmaCore.Types.TopEdge)
-           ? parent.top
-           : undefined
+           anchors.bottomMargin: ((!tasksRoot.vertical) && Plasmoid.location === PlasmaCore.Types.BottomEdge)
+           ? 0
+           : Math.round((tasksRoot.height / 2) - (Kirigami.Units.iconSizes.small * 0.14))
+
 
            anchors.horizontalCenter: (!tasksRoot.vertical)
            ? parent.horizontalCenter
            : undefined
-
-        //   parent.horizontalCenter
-           // anchors.verticalCenterOffset: -5
-         //  anchors.bottomMargin: 0
 
             property int baseRenderSize: Plasmoid.configuration.iconSize * 2
 
@@ -769,7 +704,7 @@ id: translateTransform
                     switch (Plasmoid.location) {
 
                         case PlasmaCore.Types.TopEdge:
-                            return -height - Kirigami.Units.smallSpacing
+                            return -height - Kirigami.Units.smallSpacing * 2
 
                         case PlasmaCore.Types.BottomEdge:
                             return iconBox.height + Kirigami.Units.smallSpacing
@@ -917,6 +852,12 @@ id: translateTransform
             component.createObject(task);
             component.destroy();
             updateAudioStreams({delay: false});
+            console.log(
+                "iconBox y=", iconBox.y,
+                "iconBox x=", iconBox.x,
+                "top=", iconBox.anchors.top,
+                "bottom=", iconBox.anchors.bottom
+            );
         }
 
         if (!inPopup && !model.IsWindow) {

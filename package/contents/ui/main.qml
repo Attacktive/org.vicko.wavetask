@@ -378,6 +378,13 @@ PlasmoidItem {
             // This is on a timer because the panel may not have
             // settled into position yet when the location prop-
             // erty updates.
+            console.log(
+                "location=", Plasmoid.location,
+                "tasks.width=", tasks.width,
+                "tasks.height=", tasks.height,
+                "taskList.height=", taskList.height,
+                "centerOffset=", taskList.centerOffset
+            );
             iconGeometryTimer.start();
         }
     }
@@ -976,8 +983,8 @@ PlasmoidItem {
                         }
 
                         y: {
-                            if (tasks.vertical && Plasmoid.location === PlasmaCore.Types.TopEdge)
-                                return taskList.spacing;
+                            if (isTopPanel)
+                                return  0;
 
                             if (tasks.vertical)
                                 return itemPos;
