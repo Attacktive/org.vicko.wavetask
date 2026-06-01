@@ -707,7 +707,7 @@ PlasmaCore.ToolTipArea {
                             return -height - Kirigami.Units.smallSpacing * 2
 
                         case PlasmaCore.Types.BottomEdge:
-                            return iconBox.height + Kirigami.Units.smallSpacing
+                            return iconBox.height + Kirigami.Units.smallSpacing * 2
 
                         default:
                             return 0
