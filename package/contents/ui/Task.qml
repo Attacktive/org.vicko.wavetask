@@ -469,7 +469,7 @@ PlasmaCore.ToolTipArea {
                     return LayoutMetrics.iconMargin
                 }
 
-                let iconAlign = Math.round(parent.height - Plasmoid.configuration.iconSize * zoomFactor) - Kirigami.Units.smallSpacing * 0.5
+                let iconAlign = Math.round(parent.height - Plasmoid.configuration.iconSize * zoomFactor) - Kirigami.Units.smallSpacing
                 let indicatorOffset = -Kirigami.Units.gridUnit / tasks.skinParams.positionTaskIndicator
 
                 return tasksRoot.isTopPanel ? indicatorOffset : iconAlign
@@ -479,7 +479,7 @@ PlasmaCore.ToolTipArea {
                     return LayoutMetrics.iconMargin
                 }
 
-                let iconAlign = Math.round(parent.height - Plasmoid.configuration.iconSize * zoomFactor) - Kirigami.Units.smallSpacing * 0.5
+                let iconAlign = Math.round(parent.height - Plasmoid.configuration.iconSize * zoomFactor) - Kirigami.Units.smallSpacing
                 let indicatorOffset = -Kirigami.Units.gridUnit / tasks.skinParams.positionTaskIndicator
 
                 return tasksRoot.isTopPanel ? iconAlign : indicatorOffset
