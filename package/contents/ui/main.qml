@@ -1027,14 +1027,16 @@ PlasmoidItem {
             id: penguinLoader
             active: Plasmoid.configuration.cairoPenguinEnabled
             z: 999
-            anchors.bottom: parent.bottom
+            anchors.bottom: tasks.isTopPanel ? undefined : parent.bottom
+            anchors.top: tasks.isTopPanel ? parent.top : undefined
+            anchors.topMargin: tasks.isTopPanel ? Plasmoid.configuration.iconSize / 3 : 0
 
             source: "CairoPenguin.qml"
 
             // Pasa los enlaces (bindings) al componente cargado
             onLoaded: {
                 let calculateMinX = () => taskList.x + taskList.centerOffset;
-                let calculateMaxX = () => calculateMinX() + taskList.iconsTotalWidth - item.width;
+                let calculateMaxX = () => calculateMinX() + taskList.iconsTotalSize - item.width;
 
                 item.minX = Qt.binding(calculateMinX);
                 item.maxX = Qt.binding(calculateMaxX);
