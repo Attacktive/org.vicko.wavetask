@@ -11,10 +11,17 @@ Item {
 
     opacity: 0.777
 
+    property bool isTopPanel: false
+
     property real speed: 0.4
     property int direction: 1
     property real minX: 0
     property real maxX: 0
+
+    // los frames del sprite tienen píxeles transparentes en la base; este offset
+    // baja el contenedor del sprite para que los pies queden al ras del suelo visual
+    readonly property real groundOffset: height / 4
+
     property bool dockIsReady: (maxX - minX) > width
 
     property string currentStateName: "walker"
@@ -76,6 +83,8 @@ Item {
         id: spriteContainer
         width: parent.width
         height: parent.height
+        // posición base desplazada para que los pies coincidan con el suelo visual
+        y: cairoPenguinRoot.groundOffset
         transform: Scale {
             origin.x: spriteContainer.width * 2 / 3
             origin.y: spriteContainer.height * 2 / 3
@@ -450,8 +459,11 @@ Item {
         NumberAnimation {
             target: spriteContainer
             property: "y"
-            from: 0
-            to: -40
+            from: cairoPenguinRoot.groundOffset
+            // en panel superior el salto va hacia abajo (alejándose del borde)
+            to: cairoPenguinRoot.isTopPanel
+                ? cairoPenguinRoot.groundOffset + 40
+                : cairoPenguinRoot.groundOffset - 40
             duration: 800
             easing.type: Easing.OutQuad
         }
@@ -459,7 +471,7 @@ Item {
         NumberAnimation {
             target: spriteContainer
             property: "y"
-            to: 0
+            to: cairoPenguinRoot.groundOffset
             duration: 400
             easing.type: Easing.InQuad
         }

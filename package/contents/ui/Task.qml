@@ -469,7 +469,7 @@ PlasmaCore.ToolTipArea {
                     return LayoutMetrics.iconMargin
                 }
 
-                let iconAlign = Math.round(parent.height - Plasmoid.configuration.iconSize * zoomFactor) - Kirigami.Units.smallSpacing
+                let iconAlign = Math.round(parent.height - Plasmoid.configuration.iconSize * zoomFactor) - Kirigami.Units.smallSpacing * 0.5
                 let indicatorOffset = -Kirigami.Units.gridUnit / tasks.skinParams.positionTaskIndicator
 
                 return tasksRoot.isTopPanel ? indicatorOffset : iconAlign
@@ -479,13 +479,31 @@ PlasmaCore.ToolTipArea {
                     return LayoutMetrics.iconMargin
                 }
 
-                let iconAlign = Math.round(parent.height - Plasmoid.configuration.iconSize * zoomFactor) - Kirigami.Units.smallSpacing
+                let iconAlign = Math.round(parent.height - Plasmoid.configuration.iconSize * zoomFactor) - Kirigami.Units.smallSpacing * 0.5
                 let indicatorOffset = -Kirigami.Units.gridUnit / tasks.skinParams.positionTaskIndicator
 
                 return tasksRoot.isTopPanel ? iconAlign : indicatorOffset
             }
-            leftMargin: ((inPopup || tasksRoot.vertical) && taskList.columns > 1) ? LayoutMetrics.iconMargin : Math.round(parent.width - Plasmoid.configuration.iconSize * zoomFactor) - Kirigami.Units.smallSpacing
-            rightMargin: ((inPopup || tasksRoot.vertical) && taskList.columns > 1) ? LayoutMetrics.iconMargin : Math.round(parent.width - Plasmoid.configuration.iconSize * zoomFactor) - Kirigami.Units.smallSpacing
+            leftMargin: {
+                if ((inPopup || tasksRoot.vertical) && taskList.columns > 1) {
+                    return LayoutMetrics.iconMargin
+                }
+
+                let iconAlign = Math.round(parent.width - Plasmoid.configuration.iconSize * zoomFactor) - Kirigami.Units.smallSpacing * 0.5
+                let indicatorOffset = -Kirigami.Units.gridUnit / tasks.skinParams.positionTaskIndicator
+
+                return tasksRoot.isLeftPanel ? indicatorOffset : iconAlign
+            }
+            rightMargin: {
+                if (!task.tasksRoot.vertical && taskList.rows > 1) {
+                    return LayoutMetrics.iconMargin
+                }
+
+                let iconAlign = Math.round(parent.width - Plasmoid.configuration.iconSize * zoomFactor) - Kirigami.Units.smallSpacing * 0.5
+                let indicatorOffset = -Kirigami.Units.gridUnit / tasks.skinParams.positionTaskIndicator
+
+                return tasksRoot.isLeftPanel ? iconAlign : indicatorOffset
+            }
         }
 
         imagePath: (Plasmoid.configuration.skinName === "Default Plasma") ? "widgets/tasks" : tasks.skinParams.imagetask

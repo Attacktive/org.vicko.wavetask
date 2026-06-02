@@ -47,6 +47,7 @@ PlasmoidItem {
     property alias taskRepeater: taskRepeater
 
     readonly property bool isTopPanel: Plasmoid.location === PlasmaCore.Types.TopEdge
+    readonly property bool isLeftPanel: Plasmoid.location === PlasmaCore.Types.LeftEdge
 
     preferredRepresentation: fullRepresentation
 
@@ -973,11 +974,11 @@ PlasmoidItem {
                         dockRef: taskList
 
                         x: {
-                            if (tasks.vertical && Plasmoid.location === PlasmaCore.Types.RightEdge)
-                                return width;
+                            if (tasks.vertical && tasks.isLeftPanel)
+                                return 0;
 
                             if (tasks.vertical)
-                                return 0;
+                                return width;
 
                             return itemPos;
                         }
