@@ -64,6 +64,9 @@ PlasmoidItem {
       if (object.toString().indexOf("ContainmentItem_QML") > -1) {
           tasks.containmentItem = object;
           console.log("Contenedor encontrado en el intento: " + (depth - tries));
+          console.log("containment width:", tasks.containmentItem.width)
+          console.log("containment height:", tasks.containmentItem.height)
+
       } else {
           lookForContainer(object.parent, tries - 1);
       }
@@ -83,7 +86,7 @@ PlasmoidItem {
   // --- LÓGICA DE SKINS ---
   property int topoutimage: 0
   property var skinParams: ({
-      image: "", imagetask: "", blur: false, blurRadius: 18, positionTaskIndicator: 9,
+      imageTop: "", imageBottom: "", imageLeft: "", imageRight: "", imagetask: "", blur: false, blurRadius: 18, positionTaskIndicator: 9,
       left: 0, top: 0, right: 0, bottom: 0,
       outLeft: 0, outTop: 0, outRight: 0, outBottom: 0
   })
@@ -119,6 +122,10 @@ PlasmoidItem {
 
               // Actualizamos skinParams de forma reactiva
               tasks.skinParams = {
+                  imageTop: skinFolderUrl + config.imageTop,
+                  imageBottom: skinFolderUrl + config.imageBottom,
+                  imageLeft: skinFolderUrl + config.imageLeft,
+                  imageRight: skinFolderUrl + config.imageRight,
                   image: skinFolderUrl + config.image,
                   imagetask: skinFolderUrl + config.imagetask,
                   blur: config.blur,
@@ -550,6 +557,7 @@ PlasmoidItem {
 
                 readonly property real verticalOffsetX: -Kirigami.Units.smallSpacing * 0.5
 
+
                 readonly property real currentGrowth:
                 Math.max(
                     0,
@@ -701,6 +709,9 @@ PlasmoidItem {
                 opacity: 1.0
                 readonly property real spacing: Kirigami.Units.largeSpacing
                 readonly property real topMarginSkin: tasks.containmentItem.height - 76
+                readonly property real leftMarginSkin: tasks.containmentItem.width - 76
+
+                property real rightPanelOffset:(tasks.vertical && !tasks.isLeftPanel) ? ((tasks.containmentItem.width / 2) + Kirigami.Units.smallSpacing * 3) : 0
 
                 // Cuánto crecieron los iconos con zoom respecto al base
                 readonly property real currentGrowth: Math.max(0, taskList.maxZoom + spacing * 8
@@ -716,6 +727,76 @@ PlasmoidItem {
 
                 anchors {
                     fill: parent
+
+                    leftMargin: tasks.vertical
+                    ? (tasks.isLeftPanel
+                    ? (tasks.skinParams.outBottom || 0)
+                    : (tasks.skinParams.outTop + leftMarginSkin || 0)) // <-- CORREGIDO: Se añade aquí para el panel derecho
+                    : (dockBackground.dynamicLeftMargin || 0)
+
+                    rightMargin: tasks.vertical
+                    ? (tasks.isLeftPanel
+                    ? (tasks.skinParams.outTop + leftMarginSkin || 0)
+                    : (tasks.skinParams.outBottom || 0)) // <-- CORREGIDO: Se quita de aquí para el panel derecho
+                    : (dockBackground.dynamicRightMargin || 0)
+
+                    topMargin: tasks.vertical
+                    ? ((tasks.skinParams.outRight || 0)
+                    + taskList.centerOffset
+                    - currentGrowth)
+                    : (tasks.isTopPanel
+                    ? (tasks.skinParams.outBottom || 0)
+                    : (tasks.skinParams.outTop + topMarginSkin || 0))
+
+                    bottomMargin: tasks.vertical
+                    ? ((tasks.skinParams.outLeft || 0)
+                    + taskList.centerOffset
+                    - currentGrowth)
+                    : (tasks.isTopPanel
+                    ? (tasks.skinParams.outTop + topMarginSkin || 0)
+                    : (tasks.skinParams.outBottom || 0))
+                }
+
+             /*   anchors {
+                    fill: parent
+
+                    leftMargin: tasks.vertical
+                    ? (tasks.isLeftPanel
+                    ? (tasks.skinParams.outBottom || 0)
+                    : (tasks.skinParams.outTop || 0))
+                    : (dockBackground.dynamicLeftMargin || 0)
+
+                    rightMargin: tasks.vertical
+                    ? (tasks.isLeftPanel
+                    ? (tasks.skinParams.outTop + leftMarginSkin || 0)
+                    : (tasks.skinParams.outBottom + leftMarginSkin || 0))
+                    : (dockBackground.dynamicRightMargin || 0)
+
+                    topMargin: tasks.vertical
+                    ? ((tasks.skinParams.outRight || 0)
+                    + taskList.centerOffset
+                    - currentGrowth)
+                    : (tasks.isTopPanel
+                    ? (tasks.skinParams.outBottom || 0)
+                    : (tasks.skinParams.outTop + topMarginSkin || 0))
+
+                    bottomMargin: tasks.vertical
+                    ? ((tasks.skinParams.outLeft || 0)
+                    + taskList.centerOffset
+                    - currentGrowth)
+                    : (tasks.isTopPanel
+                    ? (tasks.skinParams.outTop + topMarginSkin || 0)
+                    : (tasks.skinParams.outBottom || 0))
+                } */
+
+              /*  Rectangle {
+                    anchors.fill: parent
+                    color: "#40ff0000"
+                    z: 999
+                } */
+
+              /*  anchors {
+                    fill: parent
                     leftMargin: dockBackground.dynamicLeftMargin || 0
                     rightMargin: dockBackground.dynamicRightMargin || 0
 
@@ -726,26 +807,50 @@ PlasmoidItem {
                     bottomMargin: tasks.isTopPanel
                     ? (tasks.skinParams.outTop + topMarginSkin || 0)
                     : (tasks.skinParams.outBottom || 0)
-                }
+                } */
 
-                source: tasks.skinParams.image
+              source: {
+                  if (tasks.vertical) {
+                      return tasks.isLeftPanel
+                      ? tasks.skinParams.imageLeft
+                      : tasks.skinParams.imageRight;
+                  }
+
+                  return tasks.isTopPanel
+                  ? tasks.skinParams.imageTop
+                  : tasks.skinParams.imageBottom;
+              }
+
                 border {
+                    left: tasks.vertical
+                    ? (tasks.isLeftPanel
+                    ? tasks.skinParams.bottom
+                    : tasks.skinParams.top)
+                    : tasks.skinParams.left
+
+                    top: tasks.vertical
+                    ? tasks.skinParams.right
+                    : tasks.skinParams.top
+
+                    right: tasks.vertical
+                    ? (tasks.isLeftPanel
+                    ? tasks.skinParams.top
+                    : tasks.skinParams.bottom)
+                    : tasks.skinParams.right
+
+                    bottom: tasks.vertical
+                    ? tasks.skinParams.left
+                    : tasks.skinParams.bottom
+                }
+             /*   border {
                     left: tasks.skinParams.left
                     top: tasks.skinParams.top
                     right: tasks.skinParams.right
                     bottom: tasks.skinParams.bottom
-                }
+                } */
                 horizontalTileMode: BorderImage.Stretch
                 verticalTileMode: BorderImage.Stretch
                 z: -1
-
-                // Inversión visual de la imagen
-                transform: Scale {
-                    origin.x: width / 2
-                    origin.y: height / 2
-                    // Flip vertical si el panel está arriba (Location 3)
-                    yScale: tasks.isTopPanel ? -1 : 1
-                }
 
 
                 // --- INTEGRACIÓN DEL BLUR ---
@@ -771,6 +876,10 @@ PlasmoidItem {
                     }
 
                     var pos = mapToItem(null, 0, 0);
+
+                /*    if (tasks.vertical && !tasks.isLeftPanel) {
+                        pos = mapToItem(null, - Kirigami.Units.smallSpacing * 3, 0);
+                    } */
 
                     backend.setBlurBehind(
                         win,
@@ -978,7 +1087,7 @@ PlasmoidItem {
                                 return 0;
 
                             if (tasks.vertical)
-                                return width;
+                                return (parent.width / 2) - (taskList.spacing * 3);
 
                             return itemPos;
                         }

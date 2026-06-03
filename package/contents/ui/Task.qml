@@ -678,7 +678,8 @@ PlasmaCore.ToolTipArea {
 
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.bottom: parent.bottom
-                anchors.bottomMargin: Kirigami.Units.smallSpacing
+                anchors.bottomMargin: tasksRoot.isTopPanel ? 0 : Kirigami.Units.smallSpacing
+                anchors.topMargin: tasksRoot.isTopPanel ? Kirigami.Units.smallSpacing : 0
 
                 transformOrigin: Item.Bottom
 
