@@ -1,7 +1,10 @@
 import QtQuick
 
 QtObject {
-    property string image: "bg.png"
+    property string imageTop: "bgt.png"
+    property string imageBottom: "bg.png"
+    property string imageLeft: "bgl.png"
+    property string imageRight: "bgr.png"
     property string imagetask: "tasks.svgz"
     property bool blur: false
     property int blurRadius: 24
