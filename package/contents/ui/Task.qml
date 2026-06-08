@@ -681,6 +681,7 @@ PlasmaCore.ToolTipArea {
                 anchors.bottomMargin: tasksRoot.isTopPanel ? 0 : Kirigami.Units.smallSpacing
                 anchors.topMargin: tasksRoot.isTopPanel ? Kirigami.Units.smallSpacing : 0
 
+
                 transformOrigin: Item.Bottom
 
                 scale: 1 / (iconBox.baseRenderSize / iconBox.width)
