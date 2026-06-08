@@ -590,7 +590,7 @@ PlasmoidItem {
                             return (parent.width - width) / 2;
 
                         if (vertical && Plasmoid.location === PlasmaCore.Types.RightEdge)
-                            return (taskList.width - width) + Kirigami.Units.smallSpacing * 0.3;
+                            return (taskList.width - width) - Kirigami.Units.smallSpacing * 0.8;
 
                         return - (verticalMargins/2 + Kirigami.Units.smallSpacing * 0.9);
                     }
@@ -630,7 +630,7 @@ PlasmoidItem {
                             return (parent.width - width) / 2;
 
                         if (vertical && Plasmoid.location === PlasmaCore.Types.RightEdge)
-                            return taskList.width - width - (verticalMargins / 2) + Kirigami.Units.smallSpacing * 0.3;
+                            return taskList.width - width - (verticalMargins / 2) - Kirigami.Units.smallSpacing * 0.8;
 
                         return - (Kirigami.Units.smallSpacing * 0.9 );
                     }
@@ -757,58 +757,6 @@ PlasmoidItem {
                     : (tasks.skinParams.outBottom || 0))
                 }
 
-             /*   anchors {
-                    fill: parent
-
-                    leftMargin: tasks.vertical
-                    ? (tasks.isLeftPanel
-                    ? (tasks.skinParams.outBottom || 0)
-                    : (tasks.skinParams.outTop || 0))
-                    : (dockBackground.dynamicLeftMargin || 0)
-
-                    rightMargin: tasks.vertical
-                    ? (tasks.isLeftPanel
-                    ? (tasks.skinParams.outTop + leftMarginSkin || 0)
-                    : (tasks.skinParams.outBottom + leftMarginSkin || 0))
-                    : (dockBackground.dynamicRightMargin || 0)
-
-                    topMargin: tasks.vertical
-                    ? ((tasks.skinParams.outRight || 0)
-                    + taskList.centerOffset
-                    - currentGrowth)
-                    : (tasks.isTopPanel
-                    ? (tasks.skinParams.outBottom || 0)
-                    : (tasks.skinParams.outTop + topMarginSkin || 0))
-
-                    bottomMargin: tasks.vertical
-                    ? ((tasks.skinParams.outLeft || 0)
-                    + taskList.centerOffset
-                    - currentGrowth)
-                    : (tasks.isTopPanel
-                    ? (tasks.skinParams.outTop + topMarginSkin || 0)
-                    : (tasks.skinParams.outBottom || 0))
-                } */
-
-              /*  Rectangle {
-                    anchors.fill: parent
-                    color: "#40ff0000"
-                    z: 999
-                } */
-
-              /*  anchors {
-                    fill: parent
-                    leftMargin: dockBackground.dynamicLeftMargin || 0
-                    rightMargin: dockBackground.dynamicRightMargin || 0
-
-                    topMargin: tasks.isTopPanel
-                    ? (tasks.skinParams.outBottom || 0)
-                    : (tasks.skinParams.outTop + topMarginSkin || 0)
-
-                    bottomMargin: tasks.isTopPanel
-                    ? (tasks.skinParams.outTop + topMarginSkin || 0)
-                    : (tasks.skinParams.outBottom || 0)
-                } */
-
               source: {
                   if (tasks.vertical) {
                       return tasks.isLeftPanel
@@ -842,12 +790,7 @@ PlasmoidItem {
                     ? tasks.skinParams.left
                     : tasks.skinParams.bottom
                 }
-             /*   border {
-                    left: tasks.skinParams.left
-                    top: tasks.skinParams.top
-                    right: tasks.skinParams.right
-                    bottom: tasks.skinParams.bottom
-                } */
+
                 horizontalTileMode: BorderImage.Stretch
                 verticalTileMode: BorderImage.Stretch
                 z: -1
