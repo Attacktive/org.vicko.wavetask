@@ -1078,7 +1078,7 @@ PlasmoidItem {
         // Gestiona la vinculación de propiedades una vez que el componente se carga en memoria.
         Loader {
             id: penguinLoader
-            active: Plasmoid.configuration.cairoPenguinEnabled
+            active: ((!tasks.vertical) && Plasmoid.configuration.cairoPenguinEnabled)
             z: 999
             anchors.bottom: tasks.isTopPanel ? undefined : parent.bottom
             anchors.top: tasks.isTopPanel ? parent.top : undefined
