@@ -790,9 +790,57 @@ PlasmaCore.ToolTipArea {
             }
         }
 
+    // --- META KEY TASK INDEX BADGE ---
+    Item {
+        id: metaIndexBadge
 
+        visible: tasksRoot.metaShowActive && Plasmoid.configuration.showTaskNumbersOnMeta
 
+        // Position depends on panel location:
+        // Bottom panel: above icon; Top panel: below icon
+        // Left panel: right of icon; Right panel: left of icon
+        anchors.horizontalCenter: tasksRoot.vertical ? undefined : iconBox.horizontalCenter
+        anchors.verticalCenter: tasksRoot.vertical ? iconBox.verticalCenter : undefined
 
+        anchors.bottom: tasksRoot.vertical ? undefined
+            : (tasksRoot.isTopPanel ? undefined : iconBox.top)
+        anchors.top: tasksRoot.vertical ? undefined
+            : (tasksRoot.isTopPanel ? iconBox.bottom : undefined)
+        anchors.left: tasksRoot.vertical
+            ? (tasksRoot.isLeftPanel ? iconBox.right : undefined)
+            : undefined
+        anchors.right: tasksRoot.vertical
+            ? (tasksRoot.isLeftPanel ? undefined : iconBox.left)
+            : undefined
+
+        anchors.bottomMargin: (!tasksRoot.vertical && !tasksRoot.isTopPanel) ? 4 : 0
+        anchors.topMargin: (!tasksRoot.vertical && tasksRoot.isTopPanel) ? 4 : 0
+        anchors.leftMargin: (tasksRoot.vertical && tasksRoot.isLeftPanel) ? 4 : 0
+        anchors.rightMargin: (tasksRoot.vertical && !tasksRoot.isLeftPanel) ? 4 : 0
+
+        width: 20
+        height: 20
+        z: 10
+
+        Rectangle {
+            anchors.fill: parent
+            radius: width / 2
+            color: Qt.rgba(0, 0, 0, 0.7)
+            border.color: Qt.rgba(1, 1, 1, 0.5)
+            border.width: 1
+            antialiasing: true
+        }
+
+        PlasmaComponents3.Label {
+            anchors.centerIn: parent
+            text: (task.index + 1).toString()
+            font.pixelSize: 11
+            font.bold: true
+            color: "#ffffff"
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+        }
+    }
 
     PlasmaComponents3.Label {
         id: label

@@ -46,6 +46,48 @@ PlasmoidItem {
     property alias taskList: taskList
     property alias taskRepeater: taskRepeater
 
+    readonly property bool metaKeyHeld: backend.metaKeyHeld
+    readonly property bool metaFeaturesEnabled: Plasmoid.configuration.showOnMetaKey
+                                                || Plasmoid.configuration.showTaskNumbersOnMeta
+
+    // --- META KEY DOCK VISIBILITY ---
+    property bool metaShowActive: false
+
+    // Reset timer: hides dock and numbers after Meta is no longer detected
+    Timer {
+        id: metaResetTimer
+        interval: 500
+        repeat: false
+        onTriggered: {
+            console.log("QML: metaResetTimer fired, hiding dock/numbers");
+            tasks.metaShowActive = false;
+        }
+    }
+
+    // Refresh timer: while Meta is still held, keep restarting the reset timer
+    Timer {
+        id: metaRefreshTimer
+        interval: 200
+        repeat: true
+        running: tasks.metaShowActive
+        onTriggered: {
+            if (backend.metaKeyHeld) {
+                metaResetTimer.restart();
+            }
+        }
+    }
+
+    Connections {
+        target: backend
+        function onMetaKeyHeldChanged() {
+            console.log("QML: onMetaKeyHeldChanged, held=" + backend.metaKeyHeld);
+            if (backend.metaKeyHeld && Plasmoid.configuration.showOnMetaKey) {
+                tasks.metaShowActive = true;
+                metaResetTimer.restart();
+            }
+        }
+    }
+
     readonly property bool isTopPanel: Plasmoid.location === PlasmaCore.Types.TopEdge
     readonly property bool isLeftPanel: Plasmoid.location === PlasmaCore.Types.LeftEdge
 
@@ -441,8 +483,15 @@ PlasmoidItem {
         Binding {
             target: Plasmoid
             property: "status"
-            value: (tasksModel.anyTaskDemandsAttention && Plasmoid.configuration.unhideOnAttention
-                ? PlasmaCore.Types.NeedsAttentionStatus : PlasmaCore.Types.PassiveStatus)
+            value: {
+                if (tasks.metaShowActive) {
+                    return PlasmaCore.Types.NeedsAttentionStatus;
+                }
+                if (tasksModel.anyTaskDemandsAttention && Plasmoid.configuration.unhideOnAttention) {
+                    return PlasmaCore.Types.NeedsAttentionStatus;
+                }
+                return PlasmaCore.Types.PassiveStatus;
+            }
             restoreMode: Binding.RestoreBinding
         }
 

@@ -173,6 +173,14 @@
     <entry name="cairoPenguinEnabled" type="Bool">
       <default>false</default>
     </entry>
+    <entry name="showOnMetaKey" type="Bool">
+      <label>Whether pressing the Meta/Win key should temporarily show the dock when it is hidden.</label>
+      <default>true</default>
+    </entry>
+    <entry name="showTaskNumbersOnMeta" type="Bool">
+      <label>Whether holding the Meta/Win key should display task index numbers above each icon.</label>
+      <default>true</default>
+    </entry>
   </group>
 
 </kcfg>

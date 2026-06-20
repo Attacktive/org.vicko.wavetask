@@ -42,6 +42,17 @@
 #include <processcore/process.h>
 #include <processcore/processes.h>
 
+#include <QDBusConnection>
+#include <QSocketNotifier>
+#include <QDir>
+#include <QFile>
+#include <QSet>
+
+#include <fcntl.h>
+#include <sys/ioctl.h>
+#include <unistd.h>
+#include <linux/input.h>
+
 namespace KAStats = KActivities::Stats;
 
 using namespace KAStats;
@@ -63,11 +74,154 @@ Backend::Backend(QObject *parent)
                     m_activityManagerPluginsSettings.load();
                 }
             });
+
+    // Direct /dev/input keyboard monitoring (instant, no focus dependency)
+    initInputMonitor();
+
+    // Register D-Bus object for external communication
+    QDBusConnection::sessionBus().registerObject(
+        QStringLiteral("/WavetaskMeta"), this, QDBusConnection::ExportScriptableSlots);
+
+    qCWarning(WAVETASK_DEBUG) << "Backend: Meta detection via /dev/input + DBus";
 }
 
 Backend::~Backend()
 {
+    for (auto *notifier : m_inputNotifiers) {
+        delete notifier;
+    }
+    for (int fd : m_inputFds) {
+        close(fd);
+    }
 }
+
+// --- Meta Key Detection ---
+
+bool Backend::isMetaKeyHeld() const
+{
+    return m_metaKeyHeld;
+}
+
+void Backend::setMetaKeyHeld(bool held)
+{
+    if (m_metaKeyHeld != held) {
+        qCWarning(WAVETASK_DEBUG) << "Backend: metaKeyHeld changed to" << held;
+        m_metaKeyHeld = held;
+        Q_EMIT metaKeyHeldChanged();
+    }
+}
+
+// --- /dev/input Keyboard Monitoring ---
+
+void Backend::initInputMonitor()
+{
+    // Scan for keyboard devices once at startup
+    scanInputDevices();
+
+    // Periodically rescan for hotplugged devices
+    m_rescanTimer = new QTimer(this);
+    m_rescanTimer->setInterval(5000);
+    connect(m_rescanTimer, &QTimer::timeout, this, &Backend::scanInputDevices);
+    m_rescanTimer->start();
+}
+
+void Backend::scanInputDevices()
+{
+    QDir inputDir(QStringLiteral("/dev/input"));
+    const auto entries = inputDir.entryList({QStringLiteral("event*")}, QDir::System, QDir::Name);
+
+    // Track already monitored paths to avoid duplicates
+    static QSet<QString> monitoredPaths;
+
+    for (const auto &name : entries) {
+        QString path = inputDir.absoluteFilePath(name);
+
+        if (monitoredPaths.contains(path)) {
+            continue; // Already monitoring this device
+        }
+
+        int fd = open(path.toUtf8().constData(), O_RDONLY | O_NONBLOCK);
+        if (fd < 0) {
+            continue;
+        }
+
+        // Check if this device supports EV_KEY events
+        unsigned long evBits[EV_CNT / (sizeof(unsigned long) * 8) + 1] = {};
+        if (ioctl(fd, EVIOCGBIT(0, sizeof(evBits)), evBits) < 0) {
+            close(fd);
+            continue;
+        }
+
+        if (!(evBits[EV_KEY / (sizeof(unsigned long) * 8)] & (1UL << (EV_KEY % (sizeof(unsigned long) * 8))))) {
+            close(fd);
+            continue;
+        }
+
+        // Check if it has the Meta keys
+        unsigned long keyBits[KEY_CNT / (sizeof(unsigned long) * 8) + 1] = {};
+        if (ioctl(fd, EVIOCGBIT(EV_KEY, sizeof(keyBits)), keyBits) < 0) {
+            close(fd);
+            continue;
+        }
+
+        bool hasLeftMeta = keyBits[KEY_LEFTMETA / (sizeof(unsigned long) * 8)] & (1UL << (KEY_LEFTMETA % (sizeof(unsigned long) * 8)));
+        bool hasRightMeta = keyBits[KEY_RIGHTMETA / (sizeof(unsigned long) * 8)] & (1UL << (KEY_RIGHTMETA % (sizeof(unsigned long) * 8)));
+
+        if (!hasLeftMeta && !hasRightMeta) {
+            close(fd);
+            continue;
+        }
+
+        // This is a keyboard with Meta keys — monitor it
+        auto *notifier = new QSocketNotifier(fd, QSocketNotifier::Read, this);
+        connect(notifier, &QSocketNotifier::activated, this, [this, fd]() {
+            onInputEvent(fd);
+        });
+
+        m_inputFds.append(fd);
+        m_inputNotifiers.append(notifier);
+        monitoredPaths.insert(path);
+
+        qCWarning(WAVETASK_DEBUG) << "Backend: monitoring keyboard" << path
+                                  << "(fd=" << fd << ")";
+    }
+}
+
+void Backend::onInputEvent(int fd)
+{
+    struct input_event ev;
+    while (read(fd, &ev, sizeof(ev)) == sizeof(ev)) {
+        if (ev.type == EV_KEY &&
+            (ev.code == KEY_LEFTMETA || ev.code == KEY_RIGHTMETA)) {
+            if (ev.value == 1) {
+                // Press
+                qCWarning(WAVETASK_DEBUG) << "Backend: Meta pressed (fd=" << fd << ")";
+                setMetaKeyHeld(true);
+            } else if (ev.value == 0) {
+                // Release
+                qCWarning(WAVETASK_DEBUG) << "Backend: Meta released (fd=" << fd << ")";
+                setMetaKeyHeld(false);
+            }
+            // value == 2 (auto-repeat): ignored for modifier keys
+        }
+    }
+}
+
+// --- End Input Monitor ---
+
+void Backend::metaKeyPressed()
+{
+    qCWarning(WAVETASK_DEBUG) << "Backend: D-Bus metaKeyPressed called";
+    setMetaKeyHeld(true);
+}
+
+void Backend::metaKeyReleased()
+{
+    qCWarning(WAVETASK_DEBUG) << "Backend: D-Bus metaKeyReleased called";
+    setMetaKeyHeld(false);
+}
+
+// --- End Meta Key Detection ---
 
 void Backend::setBlurBehind(QWindow *window, bool enable, int x, int y, int w, int h, int radius)
 {
