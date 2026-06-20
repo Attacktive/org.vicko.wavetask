@@ -9,32 +9,26 @@
 #include "log_settings.h"
 #include <KConfigGroup>
 #include <KDesktopFile>
-#include <KFileItem>
 #include <KFilePlacesModel>
 #include <KLocalizedString>
 #include <KNotificationJobUiDelegate>
-#include <KProtocolInfo>
 #include <KService>
 #include <KServiceAction>
 #include <KWindowEffects>
-#include <KWindowSystem>
 
 #include <KApplicationTrader>
 #include <KIO/ApplicationLauncherJob>
+#include <KIO/Global>
 
 #include <QAction>
 #include <QActionGroup>
-#include <QApplication>
-#include <QJsonArray>
 #include <QMenu>
 #include <QQuickItem>
 #include <QQuickWindow>
 #include <QStandardPaths>
 #include <QTimer>
-#include <QVersionNumber>
 #include <QWindow>
 
-#include <PlasmaActivities/Consumer>
 #include <PlasmaActivities/Stats/Cleaning>
 #include <PlasmaActivities/Stats/ResultSet>
 #include <PlasmaActivities/Stats/Terms>
@@ -45,7 +39,6 @@
 #include <QDBusConnection>
 #include <QSocketNotifier>
 #include <QDir>
-#include <QFile>
 #include <QSet>
 
 #include <fcntl.h>
