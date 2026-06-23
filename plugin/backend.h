@@ -22,6 +22,7 @@ class QActionGroup;
 class QQuickItem;
 class QQuickWindow;
 class QJsonArray;
+class QSocketNotifier;
 class QWindow;
 
 namespace KActivities
@@ -33,6 +34,7 @@ class Backend : public QObject
 {
     Q_OBJECT
     QML_ELEMENT
+    Q_CLASSINFO("D-Bus Interface", "org.kde.plasmashell.WavetaskMeta")
 
 public:
     enum MiddleClickAction {
@@ -45,6 +47,8 @@ public:
     };
 
     Q_ENUM(MiddleClickAction)
+
+    Q_PROPERTY(bool metaKeyHeld READ isMetaKeyHeld NOTIFY metaKeyHeldChanged)
 
     explicit Backend(QObject *parent = nullptr);
     ~Backend() override;
@@ -64,10 +68,17 @@ public:
     Q_INVOKABLE static QUrl tryDecodeApplicationsUrl(const QUrl &launcherUrl);
     Q_INVOKABLE static QStringList applicationCategories(const QUrl &launcherUrl);
 
+    bool isMetaKeyHeld() const;
+
 Q_SIGNALS:
     void addLauncher(const QUrl &url) const;
 
     void showAllPlaces();
+    void metaKeyHeldChanged();
+
+public Q_SLOTS:
+    Q_SCRIPTABLE void metaKeyPressed();
+    Q_SCRIPTABLE void metaKeyReleased();
 
 private Q_SLOTS:
     void handleRecentDocumentAction() const;
@@ -80,4 +91,15 @@ private:
 
     KActivityManagerdPluginsSettings m_activityManagerPluginsSettings;
     KConfigWatcher::Ptr m_activityManagerPluginsSettingsWatcher;
+
+    // Meta key detection via /dev/input monitoring
+    void setMetaKeyHeld(bool held);
+    void initInputMonitor();
+    void scanInputDevices();
+    void onInputEvent(int fd);
+
+    bool m_metaKeyHeld = false;
+    QTimer *m_rescanTimer = nullptr;
+    QList<QSocketNotifier *> m_inputNotifiers;
+    QList<int> m_inputFds;
 };

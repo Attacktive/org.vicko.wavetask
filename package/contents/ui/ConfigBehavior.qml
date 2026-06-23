@@ -37,6 +37,8 @@ KCMUtils.SimpleKCM {
     property alias cfg_showOnlyMinimized: showOnlyMinimized.checked
     property alias cfg_minimizeActiveTaskOnClick: minimizeActive.checked
     property alias cfg_unhideOnAttention: unhideOnAttention.checked
+    property alias cfg_showOnMetaKey: showOnMetaKey.checked
+    property alias cfg_showTaskNumbersOnMeta: showTaskNumbersOnMeta.checked
     property alias cfg_reverseMode: reverseMode.checked
 
     headerPaddingEnabled: false
@@ -261,6 +263,21 @@ KCMUtils.SimpleKCM {
             onToggled: {
                 annoyingAppWorkaroundMessage.visible = !unhideOnAttention.checked;
             }
+        }
+
+        Item {
+            Kirigami.FormData.isSection: true
+        }
+
+        QQC2.CheckBox {
+            id: showOnMetaKey
+            Kirigami.FormData.label: i18nc("@label for checkbox, completes sentence: … show dock when Meta key is pressed", "Meta key:")
+            text: i18nc("@option:check completes sentence: Pressing Meta key", "Shows the dock when it's hidden")
+        }
+
+        QQC2.CheckBox {
+            id: showTaskNumbersOnMeta
+            text: i18nc("@option:check completes sentence: Holding Meta key", "Displays task index numbers on each icon")
         }
 
         Item {
