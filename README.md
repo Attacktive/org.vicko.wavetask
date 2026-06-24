@@ -1,6 +1,6 @@
 # org.vicko.wavetask
 
-KDE Plasma 6 task manager with macOS-style dock zoom animation, smart launcher badges, and advanced window management features. It's based on the default task manager of KDE 6.6.
+KDE Plasma 6 task manager with macOS-style dock zoom animation, smart launcher badges, and advanced window management features. It's based on the default task manager of KDE.
 
 Since Plasma 6.6 does not allow direct access to org.kde.plasma.private.taskmanager, the plugin has had to be compiled, so the installation is no longer just a matter of copying but requires compilation.
 
@@ -8,7 +8,7 @@ Since Plasma 6.6 does not allow direct access to org.kde.plasma.private.taskmana
 
 ## Support for previous Plasma releases
 
-Currently supported versions: 6.6.
+Currently supported versions: 6.6, 6.7
 
 If you need to install it on Plasma 6.5 or lower, I recommend you do it from here: https://github.com/vickoc911/org.kde.plasma.wavetask
 
@@ -25,7 +25,7 @@ If you need to install it on Plasma 6.5 or lower, I recommend you do it from her
   ```
 </details>
 <details>
-  <summary>Fedora 44, 43, 42 (copr) (maintained by me)</summary>
+  <summary>Fedora 44, 43 (copr) (maintained by me)</summary>
   <br>
   
   ```sh
@@ -97,14 +97,14 @@ sudo make install
 - It inherits all the features of Plasma's task manager
 - Zoom like in macOS
 - Icon reflection
-- Bouncing icons
+- Bouncing icons ( only in landscape mode )
 - Basic skin system
 - Option to select the icon size
 - Option to select the zoom size
 - Option to select the amplitude
 - Option to disable icon reflection
 - blur for default and custom skins
-- Cairo Penguin
+- Cairo Penguin ( only in landscape mode )
 
 Skins:
 
@@ -122,7 +122,6 @@ Skins:
 
 What doesn't work:
 
-- For now, it only works in the bottom position
 - The panel has been resized to 86 pixels so that icons aren't cut off when zooming
 
 ### ☕ Buy Me a Coffee!
