@@ -39,8 +39,10 @@
 #include <QDBusConnection>
 #include <QSocketNotifier>
 #include <QDir>
+#include <QFileSystemWatcher>
 #include <QSet>
 
+#include <cerrno>
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
@@ -75,16 +77,14 @@ Backend::Backend(QObject *parent)
     QDBusConnection::sessionBus().registerObject(
         QStringLiteral("/WavetaskMeta"), this, QDBusConnection::ExportScriptableSlots);
 
-    qCWarning(WAVETASK_DEBUG) << "Backend: Meta detection via /dev/input + DBus";
+    qCDebug(WAVETASK_DEBUG) << "Backend: Meta detection via /dev/input + DBus";
 }
 
 Backend::~Backend()
 {
-    for (auto *notifier : m_inputNotifiers) {
-        delete notifier;
-    }
-    for (int fd : m_inputFds) {
-        close(fd);
+    for (auto it = m_inputMonitors.constBegin(); it != m_inputMonitors.constEnd(); ++it) {
+        delete it.value().notifier;
+        close(it.key());
     }
 }
 
@@ -98,7 +98,7 @@ bool Backend::isMetaKeyHeld() const
 void Backend::setMetaKeyHeld(bool held)
 {
     if (m_metaKeyHeld != held) {
-        qCWarning(WAVETASK_DEBUG) << "Backend: metaKeyHeld changed to" << held;
+        qCDebug(WAVETASK_DEBUG) << "Backend: metaKeyHeld changed to" << held;
         m_metaKeyHeld = held;
         Q_EMIT metaKeyHeldChanged();
     }
@@ -108,14 +108,33 @@ void Backend::setMetaKeyHeld(bool held)
 
 void Backend::initInputMonitor()
 {
-    // Scan for keyboard devices once at startup
+    // Initial scan for keyboards that are already connected
     scanInputDevices();
 
-    // Periodically rescan for hotplugged devices
-    m_rescanTimer = new QTimer(this);
-    m_rescanTimer->setInterval(5000);
-    connect(m_rescanTimer, &QTimer::timeout, this, &Backend::scanInputDevices);
-    m_rescanTimer->start();
+    // Short settle delay after a /dev/input change so udev finishes applying permissions to the new node
+    m_inputSettleTimer = new QTimer(this);
+    m_inputSettleTimer->setSingleShot(true);
+    m_inputSettleTimer->setInterval(500);
+    connect(m_inputSettleTimer, &QTimer::timeout, this, &Backend::scanInputDevices);
+
+    // inotify on /dev/input: probe only when nodes appear or disappear, no periodic polling
+    m_inputDirWatcher = new QFileSystemWatcher(this);
+    if (m_inputDirWatcher->addPath(QStringLiteral("/dev/input"))) {
+        connect(m_inputDirWatcher, &QFileSystemWatcher::directoryChanged, this, [this]() {
+            pruneProbedPaths();
+            m_inputSettleTimer->start();
+        });
+    } else {
+        // Fallback in case inotify is unavailable: periodic polling, now cheap because probed paths are remembered
+        auto *rescanTimer = new QTimer(this);
+        rescanTimer->setInterval(5000);
+        connect(rescanTimer, &QTimer::timeout, this, [this]() {
+            pruneProbedPaths();
+            scanInputDevices();
+        });
+
+        rescanTimer->start();
+    }
 }
 
 void Backend::scanInputDevices()
@@ -123,20 +142,21 @@ void Backend::scanInputDevices()
     QDir inputDir(QStringLiteral("/dev/input"));
     const auto entries = inputDir.entryList({QStringLiteral("event*")}, QDir::System, QDir::Name);
 
-    // Track already monitored paths to avoid duplicates
-    static QSet<QString> monitoredPaths;
-
     for (const auto &name : entries) {
         QString path = inputDir.absoluteFilePath(name);
 
-        if (monitoredPaths.contains(path)) {
-            continue; // Already monitoring this device
+        if (m_probedPaths.contains(path)) {
+            continue; // Already probed before (monitored or rejected)
         }
 
         int fd = open(path.toUtf8().constData(), O_RDONLY | O_NONBLOCK);
         if (fd < 0) {
+            // Don't remember the path: if udev hasn't applied permissions yet, the next /dev/input change retries it
             continue;
         }
+
+        // Each device is probed at most once per lifetime, monitored or not
+        m_probedPaths.insert(path);
 
         // Check if this device supports EV_KEY events
         unsigned long evBits[EV_CNT / (sizeof(unsigned long) * 8) + 1] = {};
@@ -171,46 +191,105 @@ void Backend::scanInputDevices()
             onInputEvent(fd);
         });
 
-        m_inputFds.append(fd);
-        m_inputNotifiers.append(notifier);
-        monitoredPaths.insert(path);
+        m_inputMonitors.insert(fd, {path, notifier});
 
-        qCWarning(WAVETASK_DEBUG) << "Backend: monitoring keyboard" << path
-                                  << "(fd=" << fd << ")";
+        qCDebug(WAVETASK_DEBUG) << "Backend: monitoring keyboard" << path
+                                << "(fd=" << fd << ")";
     }
+}
+
+void Backend::pruneProbedPaths()
+{
+    QDir inputDir(QStringLiteral("/dev/input"));
+    const auto entries = inputDir.entryList({QStringLiteral("event*")}, QDir::System, QDir::Name);
+
+    QSet<QString> currentPaths;
+    for (const auto &name : entries) {
+        currentPaths.insert(inputDir.absoluteFilePath(name));
+    }
+
+    // Forget nodes that no longer exist, so a reconnection reusing the same path gets probed again
+    m_probedPaths.intersect(currentPaths);
 }
 
 void Backend::onInputEvent(int fd)
 {
     struct input_event ev;
-    while (read(fd, &ev, sizeof(ev)) == sizeof(ev)) {
-        if (ev.type == EV_KEY &&
-            (ev.code == KEY_LEFTMETA || ev.code == KEY_RIGHTMETA)) {
-            if (ev.value == 1) {
-                // Press
-                qCWarning(WAVETASK_DEBUG) << "Backend: Meta pressed (fd=" << fd << ")";
-                setMetaKeyHeld(true);
-            } else if (ev.value == 0) {
-                // Release
-                qCWarning(WAVETASK_DEBUG) << "Backend: Meta released (fd=" << fd << ")";
-                setMetaKeyHeld(false);
+
+    while (true) {
+        const ssize_t bytesRead = read(fd, &ev, sizeof(ev));
+
+        if (bytesRead == static_cast<ssize_t>(sizeof(ev))) {
+            if (ev.type == EV_KEY &&
+                (ev.code == KEY_LEFTMETA || ev.code == KEY_RIGHTMETA)) {
+                if (ev.value == 1) {
+                    // Press
+                    qCDebug(WAVETASK_DEBUG) << "Backend: Meta pressed (fd=" << fd << ")";
+                    setMetaKeyHeld(true);
+                } else if (ev.value == 0) {
+                    // Release
+                    qCDebug(WAVETASK_DEBUG) << "Backend: Meta released (fd=" << fd << ")";
+                    setMetaKeyHeld(false);
+                }
+
+                // value == 2 (auto-repeat): ignored for modifier keys
             }
-            // value == 2 (auto-repeat): ignored for modifier keys
+
+            continue;
+        }
+
+        if (bytesRead < 0 && errno == EINTR) {
+            continue;
+        }
+
+        if (bytesRead < 0 && errno == EAGAIN) {
+            break; // No more events pending
+        }
+
+        // EOF or error (e.g. ENODEV on keyboard unplug): tear down the monitor so the notifier doesn't fire in a busy loop
+        removeInputDevice(fd);
+        break;
+    }
+}
+
+void Backend::removeInputDevice(int fd)
+{
+    const InputDeviceMonitor monitor = m_inputMonitors.take(fd);
+    if (!monitor.notifier) {
+        return;
+    }
+
+    monitor.notifier->setEnabled(false);
+    monitor.notifier->deleteLater();
+    close(fd);
+
+    // Forget the path (unless another fd already monitors the node that reused it) so a reconnection gets probed again
+    bool pathStillMonitored = false;
+    for (const auto &other : std::as_const(m_inputMonitors)) {
+        if (other.path == monitor.path) {
+            pathStillMonitored = true;
+            break;
         }
     }
+
+    if (!pathStillMonitored) {
+        m_probedPaths.remove(monitor.path);
+    }
+
+    qCDebug(WAVETASK_DEBUG) << "Backend: stopped monitoring" << monitor.path << "(fd=" << fd << ")";
 }
 
 // --- End Input Monitor ---
 
 void Backend::metaKeyPressed()
 {
-    qCWarning(WAVETASK_DEBUG) << "Backend: D-Bus metaKeyPressed called";
+    qCDebug(WAVETASK_DEBUG) << "Backend: D-Bus metaKeyPressed called";
     setMetaKeyHeld(true);
 }
 
 void Backend::metaKeyReleased()
 {
-    qCWarning(WAVETASK_DEBUG) << "Backend: D-Bus metaKeyReleased called";
+    qCDebug(WAVETASK_DEBUG) << "Backend: D-Bus metaKeyReleased called";
     setMetaKeyHeld(false);
 }
 

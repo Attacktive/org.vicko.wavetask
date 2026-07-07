@@ -8,8 +8,10 @@
 
 #include <KConfigWatcher>
 
+#include <QHash>
 #include <QObject>
 #include <QRect>
+#include <QSet>
 
 #include <netwm.h>
 #include <qqmlregistration.h>
@@ -19,10 +21,12 @@
 
 class QAction;
 class QActionGroup;
+class QFileSystemWatcher;
 class QQuickItem;
 class QQuickWindow;
 class QJsonArray;
 class QSocketNotifier;
+class QTimer;
 class QWindow;
 
 namespace KActivities
@@ -96,10 +100,18 @@ private:
     void setMetaKeyHeld(bool held);
     void initInputMonitor();
     void scanInputDevices();
+    void pruneProbedPaths();
     void onInputEvent(int fd);
+    void removeInputDevice(int fd);
+
+    struct InputDeviceMonitor {
+        QString path;
+        QSocketNotifier *notifier = nullptr;
+    };
 
     bool m_metaKeyHeld = false;
-    QTimer *m_rescanTimer = nullptr;
-    QList<QSocketNotifier *> m_inputNotifiers;
-    QList<int> m_inputFds;
+    QFileSystemWatcher *m_inputDirWatcher = nullptr;
+    QTimer *m_inputSettleTimer = nullptr;
+    QHash<int, InputDeviceMonitor> m_inputMonitors;
+    QSet<QString> m_probedPaths;
 };
