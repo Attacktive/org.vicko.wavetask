@@ -70,8 +70,8 @@ Rectangle {
         text: {
             if (badgeRect.number < 0) {
                 return i18nc("Invalid number of new messages, overlay, keep short", "—");
-            } else if (badgeRect.number > 9999) {
-                return i18nc("Over 9999 new messages, overlay, keep short", "9,999+");
+            } else if (badgeRect.number > 999) {
+                return i18nc("Over 999 new messages, overlay, keep short", "999");
             } else {
                 return badgeRect.number.toLocaleString(Qt.locale(), 'f', 0);
             }
