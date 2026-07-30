@@ -592,6 +592,32 @@ PlasmaCore.ToolTipArea {
 
             property int baseRenderSize: Plasmoid.configuration.iconSize * 2
 
+            // Desplazamiento del rebote alejándose del borde del panel
+            property real bounceOffset: 0
+
+            // Proyección del rebote sobre cada eje según el borde del panel; la comparten iconBox y metaIndexBadge.
+            readonly property real bounceX: {
+                switch (Plasmoid.location) {
+                    case PlasmaCore.Types.LeftEdge:
+                        return bounceOffset
+                    case PlasmaCore.Types.RightEdge:
+                        return -bounceOffset
+                    default:
+                        return 0
+                }
+            }
+
+            readonly property real bounceY: {
+                switch (Plasmoid.location) {
+                    case PlasmaCore.Types.TopEdge:
+                        return bounceOffset
+                    case PlasmaCore.Types.BottomEdge:
+                        return -bounceOffset
+                    default:
+                        return 0
+                }
+            }
+
             SequentialAnimation {
                 id: bounceAnimation
                 running: task.model.IsStartup || task.model.IsDemandingAttention || (task.smartLauncherItem && task.smartLauncherItem.urgent)
@@ -613,7 +639,7 @@ PlasmaCore.ToolTipArea {
                 // Animación de ascenso (impulso)
                 NumberAnimation {
                     target: iconBox
-                    property: "anchors.bottomMargin"
+                    property: "bounceOffset"
                     from: 0
                     to: bounceAnimation.jumpHeight
                     duration: 300
@@ -623,7 +649,7 @@ PlasmaCore.ToolTipArea {
                 // Animación de descenso (gravedad)
                 NumberAnimation {
                     target: iconBox
-                    property: "anchors.bottomMargin"
+                    property: "bounceOffset"
                     to: 0
                     duration: 300
                     easing.type: Easing.InQuad
@@ -648,6 +674,12 @@ PlasmaCore.ToolTipArea {
                     default:
                         return Item.Bottom;
                 }
+            }
+
+            // Rebote hacia fuera del panel (no hacia el borde)
+            transform: Translate {
+                x: iconBox.bounceX
+                y: iconBox.bounceY
             }
 
             asynchronous: true
@@ -706,14 +738,20 @@ PlasmaCore.ToolTipArea {
                 ? iconBox.height
                 : iconBox.height / 2
 
+                /*
+                 * Compensación 2× en coords locales del hijo: cancela el Translate del padre y aplica el rebote opuesto.
+                 * Se divide por zoomFactor porque x/y sí se escalan y el Translate del padre no.
+                 */
+                readonly property real bounceCompensation: iconBox.bounceOffset * 2 / zoomFactor
+
                 x: {
                     switch (Plasmoid.location) {
 
                         case PlasmaCore.Types.LeftEdge:
-                            return -width - Kirigami.Units.smallSpacing * 2.5
+                            return -width - Kirigami.Units.smallSpacing * 2.5 - bounceCompensation
 
                         case PlasmaCore.Types.RightEdge:
-                            return iconBox.width + Kirigami.Units.smallSpacing * 2.5
+                            return iconBox.width + Kirigami.Units.smallSpacing * 2.5 + bounceCompensation
 
                         default:
                             return 0
@@ -724,10 +762,10 @@ PlasmaCore.ToolTipArea {
                     switch (Plasmoid.location) {
 
                         case PlasmaCore.Types.TopEdge:
-                            return -height - Kirigami.Units.smallSpacing * 2
+                            return -height - Kirigami.Units.smallSpacing * 2 - bounceCompensation
 
                         case PlasmaCore.Types.BottomEdge:
-                            return iconBox.height + Kirigami.Units.smallSpacing * 2
+                            return iconBox.height + Kirigami.Units.smallSpacing * 2 + bounceCompensation
 
                         default:
                             return 0
@@ -817,6 +855,12 @@ PlasmaCore.ToolTipArea {
         anchors.topMargin: (!tasksRoot.vertical && tasksRoot.isTopPanel) ? 4 : 0
         anchors.leftMargin: (tasksRoot.vertical && tasksRoot.isLeftPanel) ? 4 : 0
         anchors.rightMargin: (tasksRoot.vertical && !tasksRoot.isLeftPanel) ? 4 : 0
+
+        // Los anchors no siguen transforms de iconBox; replicamos el rebote.
+        transform: Translate {
+            x: iconBox.bounceX
+            y: iconBox.bounceY
+        }
 
         width: 20
         height: 20
