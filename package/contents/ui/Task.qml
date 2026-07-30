@@ -624,17 +624,11 @@ PlasmaCore.ToolTipArea {
                 loops: Animation.Infinite
                 alwaysRunToEnd: true
 
-                // Calculamos la altura del salto considerando el factor de escala (zoom)
-                property real jumpHeight: {
-                    let currentSize = Plasmoid.configuration.iconSize * zoomFactor;
-                    let idealJump = currentSize * 0.6; // Salto base: 60% del tamaño del icono
-
-                    // Calculamos el espacio disponible para evitar que el icono se corte con el borde del panel
-                    let headroom = Math.max(0, tasksRoot.height - Plasmoid.configuration.iconSize);
-
-                    // Limitamos el salto al espacio real disponible
-                    return Math.min(idealJump, headroom);
-                }
+                /*
+                 * Salto base: 60% del tamaño del icono (con zoom).
+                 * Sin tope por la altura del panel: el rebote se anima fuera del layout del applet; en un panel estrecho el compositor aún puede recortar.
+                 */
+                property real jumpHeight: Plasmoid.configuration.iconSize * zoomFactor * 0.6
 
                 // Animación de ascenso (impulso)
                 NumberAnimation {
