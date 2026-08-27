@@ -21,6 +21,8 @@ namespace NotificationManager
 class Settings;
 }
 
+namespace WaveTask
+{
 namespace SmartLauncher
 {
 struct Entry {
@@ -118,3 +120,5 @@ private:
 };
 
 } // namespace SmartLauncher
+
+} // namespace WaveTask

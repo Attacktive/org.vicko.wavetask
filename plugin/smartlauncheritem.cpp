@@ -11,6 +11,8 @@
 
 #include "log_settings.h"
 
+namespace WaveTask
+{
 using namespace SmartLauncher;
 
 Item::Item(QObject *parent)
@@ -221,5 +223,7 @@ void Item::setUrgent(bool urgent)
         Q_EMIT urgentChanged(urgent);
     }
 }
+
+} // namespace WaveTask
 
 #include "moc_smartlauncheritem.cpp"

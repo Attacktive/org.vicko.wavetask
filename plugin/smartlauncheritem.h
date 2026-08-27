@@ -13,6 +13,8 @@
 
 #include "smartlauncherbackend.h"
 
+namespace WaveTask
+{
 namespace SmartLauncher
 {
 
@@ -80,3 +82,5 @@ private:
 };
 
 } // namespace SmartLauncher
+
+} // namespace WaveTask

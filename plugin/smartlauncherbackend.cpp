@@ -21,6 +21,8 @@
 #include "log_settings.h"
 #include <settings.h>
 
+namespace WaveTask
+{
 using namespace SmartLauncher;
 using namespace NotificationManager;
 
@@ -247,5 +249,7 @@ void Backend::onServiceUnregistered(const QString &service)
     m_launchers.remove(storageId);
     Q_EMIT launcherRemoved(storageId);
 }
+
+} // namespace WaveTask
 
 #include "moc_smartlauncherbackend.cpp"
