@@ -48,6 +48,8 @@
 #include <unistd.h>
 #include <linux/input.h>
 
+namespace WaveTask
+{
 namespace KAStats = KActivities::Stats;
 
 using namespace KAStats;
@@ -778,5 +780,7 @@ qint64 Backend::parentPid(qint64 pid) const
 
     return -1;
 }
+
+} // namespace WaveTask
 
 #include "moc_backend.cpp"
